@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import builderRoutes from './builder.routes';
 
 /**
  * Main Route Aggregator
@@ -27,8 +28,9 @@ router.get('/health', (_req, res) => {
     });
 });
 
-// Feature routes will be registered here as we build them:
-// router.use('/builder', builderRoutes);
-// router.use('/resumes', resumeRoutes);
+// Feature routes
+router.use('/builder', builderRoutes);
+// router.use('/resumes', resumeRoutes); // Phase 6
 
 export default router;
+
