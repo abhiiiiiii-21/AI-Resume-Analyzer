@@ -3,6 +3,7 @@ import { UserContextService } from '../services/user-context.service';
 import { BuilderSessionService } from '../services/builder-session.service';
 import { ChatService } from '../services/chat.service';
 import { ResumeDraftService } from '../services/resume-draft.service';
+import { ResumeAIService } from '../services/resume-ai.service';
 import { ApiResponse } from '../utils/api-response';
 import { asyncHandler } from '../utils/async-handler';
 import { ResumeData } from '../types/resume.types';
@@ -27,12 +28,14 @@ export class BuilderController {
     private sessionService: BuilderSessionService;
     private chatService: ChatService;
     private draftService: ResumeDraftService;
+    private aiService: ResumeAIService;
 
     constructor() {
         this.userContextService = new UserContextService();
         this.sessionService = new BuilderSessionService();
         this.chatService = new ChatService();
         this.draftService = new ResumeDraftService();
+        this.aiService = new ResumeAIService();
     }
 
     /**
@@ -108,9 +111,16 @@ export class BuilderController {
     /**
      * POST /api/v1/builder/session/:sessionId/message
      * 
-     * Send a chat message to the AI for resume building.
-     * This is a SKELETON — full AI integration will be added in Phase 5.
-     * For now, it saves the message and returns a placeholder response.
+     * The MAIN endpoint — send a chat message to the AI for resume building.
+     * 
+     * Flow:
+     * 1. Validate user + session
+     * 2. Save user message to chat history
+     * 3. Load current context (draft + chat history)
+     * 4. Call AI service (Gemini)
+     * 5. Save updated draft to database
+     * 6. Save assistant message to chat history
+     * 7. Return structured response to frontend
      */
     sendMessage = asyncHandler(async (req: Request, res: Response) => {
         // 1. Resolve user
@@ -125,32 +135,47 @@ export class BuilderController {
             return ApiResponse.error(res, 'No draft found for this session', 404);
         }
 
-        // 4. Save the user's message
+        // 4. Save the user's message to chat history
         await this.chatService.saveUserMessage(session.id, req.body.message);
 
-        // ──────────────────────────────────────────────
-        // PHASE 5 WILL REPLACE THIS BLOCK:
-        // - Call Gemini AI with context
-        // - Parse structured response
-        // - Merge into draft
-        // - Save assistant message
-        // ──────────────────────────────────────────────
-        const placeholderResponse = {
-            assistantMessage: '[AI integration pending — Phase 5] Your message was received and saved.',
-            resumeData: draft.resumeJson as ResumeData,
-            missingFields: draft.missingFields as string[],
-            completionScore: draft.completionScore,
-            needsMoreInfo: true,
-            nextQuestion: 'AI integration will be added in Phase 5.',
-        };
+        // 5. Load recent chat history for AI context
+        const chatHistory = await this.chatService.getRecentMessages(session.id, 20);
 
-        // Save placeholder assistant message
-        await this.chatService.saveAssistantMessage(
-            session.id,
-            placeholderResponse.assistantMessage
+        // 6. Call the AI service — this is where the magic happens
+        const aiResult = await this.aiService.processMessage(
+            req.body.message,
+            draft.resumeJson as ResumeData,
+            chatHistory,
+            draft.missingFields as string[]
         );
 
-        // 5. Return response
-        ApiResponse.success(res, placeholderResponse);
+        // 7. Save the updated draft to the database
+        await this.draftService.updateDraftFromAI(
+            draft.id,
+            aiResult.resumeData,
+            aiResult.completionScore,
+            aiResult.missingFields
+        );
+
+        // 8. Save the assistant's response to chat history
+        await this.chatService.saveAssistantMessage(
+            session.id,
+            aiResult.assistantMessage,
+            {
+                completionScore: aiResult.completionScore,
+                missingFields: aiResult.missingFields,
+                needsMoreInfo: aiResult.needsMoreInfo,
+            }
+        );
+
+        // 9. Return the structured response to the frontend
+        ApiResponse.success(res, {
+            assistantMessage: aiResult.assistantMessage,
+            resumeData: aiResult.resumeData,
+            missingFields: aiResult.missingFields,
+            completionScore: aiResult.completionScore,
+            needsMoreInfo: aiResult.needsMoreInfo,
+            nextQuestion: aiResult.nextQuestion,
+        });
     });
 }

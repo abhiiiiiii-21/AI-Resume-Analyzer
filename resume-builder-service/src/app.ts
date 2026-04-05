@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import { env } from './config/env';
 import { errorMiddleware } from './middleware/error.middleware';
 import { notFoundMiddleware } from './middleware/not-found.middleware';
@@ -13,9 +14,10 @@ import routes from './routes/index';
  * This file creates and configures the Express app with:
  * 1. Security middleware (helmet, cors, rate-limit)
  * 2. Body parsing (JSON)
- * 3. API routes under /api/v1
- * 4. 404 handler for unknown routes
- * 5. Global error handler (must be last)
+ * 3. Static file serving (for generated PDFs)
+ * 4. API routes under /api/v1
+ * 5. 404 handler for unknown routes
+ * 6. Global error handler (must be last)
  * 
  * The app is exported separately from the server so it can
  * be used in tests without starting the HTTP server.
@@ -63,7 +65,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // ──────────────────────────────────────────────
-// 3. API Routes
+// 3. Static Files (generated PDFs)
+// ──────────────────────────────────────────────
+
+// Serve generated resume PDFs from the uploads directory
+app.use('/uploads/resumes', express.static(path.join(__dirname, 'uploads')));
+
+// ──────────────────────────────────────────────
+// 4. API Routes
 // ──────────────────────────────────────────────
 
 // All routes are prefixed with /api/v1 for versioning
