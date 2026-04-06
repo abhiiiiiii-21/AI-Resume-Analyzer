@@ -1,6 +1,6 @@
 # AI Resume Builder Service
 
-> A standalone, backend-first AI-powered Resume Builder API built with Node.js, TypeScript, Express, Drizzle ORM, Neon Postgres, and Google Gemini.
+> A standalone, backend-first AI-powered Resume Builder API built with Node.js, TypeScript, Express, Drizzle ORM, Neon Postgres, and Groq.
 
 Build professional, ATS-optimized resumes through a conversational AI interface. The AI strategically asks follow-up questions, extracts structured data, and generates downloadable PDFs.
 
@@ -10,13 +10,13 @@ Build professional, ATS-optimized resumes through a conversational AI interface.
 
 ```
 src/
-├── config/           # Environment, DB, and Gemini configuration
+├── config/           # Environment, DB, and Groq configuration
 ├── controllers/      # Thin HTTP request handlers
 ├── db/schema/        # Drizzle ORM table definitions
 ├── dto/              # Data Transfer Objects (service layer contracts)
 ├── middleware/        # Express middleware (auth, validation, errors)
 ├── prompts/          # AI prompt templates
-├── providers/        # External service wrappers (Gemini, Puppeteer)
+├── providers/        # External service wrappers (Groq, Puppeteer)
 ├── repositories/     # Database access layer (one per table)
 ├── routes/           # Express route definitions
 ├── services/         # Business logic layer
@@ -38,7 +38,7 @@ src/
 ### Prerequisites
 - Node.js 18+
 - A [Neon Postgres](https://neon.tech) database
-- A [Google Gemini API key](https://aistudio.google.com/apikey)
+- A [Groq API key](https://console.groq.com/keys)
 
 ### Setup
 
@@ -51,7 +51,7 @@ cp .env.example .env
 
 # 3. Fill in your .env values:
 #    DATABASE_URL=postgresql://...
-#    GEMINI_API_KEY=...
+#    GROQ_API_KEY=...
 
 # 4. Generate and run database migrations
 npm run db:generate
@@ -157,7 +157,7 @@ curl -X POST http://localhost:4000/api/v1/resumes/<resumeId>/export-pdf \
 
 1. User sends a message via the chat endpoint
 2. System builds a prompt with: system instructions + current resume state + chat history
-3. Gemini returns a structured JSON with extracted resume data + follow-up questions
+3. Groq returns a structured JSON with extracted resume data + follow-up questions
 4. Response is safely parsed (handles markdown fences, malformed JSON)
 5. New data is merged into the existing draft (never overwrites, only adds/improves)
 6. Updated draft is saved to database
@@ -170,8 +170,8 @@ curl -X POST http://localhost:4000/api/v1/resumes/<resumeId>/export-pdf \
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DATABASE_URL` | ✅ | — | Neon Postgres connection string |
-| `GEMINI_API_KEY` | ✅ | — | Google Gemini API key |
-| `GEMINI_MODEL` | ❌ | `gemini-1.5-flash` | Gemini model name |
+| `GROQ_API_KEY` | ✅ | — | Groq API key |
+| `GROQ_MODEL` | ❌ | `llama-3.3-70b-versatile` | Groq model name |
 | `PORT` | ❌ | `4000` | Server port |
 | `NODE_ENV` | ❌ | `development` | Environment |
 | `CORS_ORIGINS` | ❌ | `http://localhost:3000` | Allowed origins |
@@ -187,7 +187,7 @@ curl -X POST http://localhost:4000/api/v1/resumes/<resumeId>/export-pdf \
 - **Framework:** Express.js
 - **ORM:** Drizzle ORM
 - **Database:** Neon Postgres
-- **AI:** Google Gemini API
+- **AI:** Groq SDK (llama-3.3-70b-versatile)
 - **PDF:** Puppeteer
 - **Validation:** Zod
 - **Security:** Helmet, CORS, Rate Limiting

@@ -15,8 +15,8 @@ const envSchema = z.object({
     PORT: z.string().default('4000'),
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-    GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
-    GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
+    GROQ_API_KEY: z.string().min(1, 'GROQ_API_KEY is required'),
+    GROQ_MODEL: z.string().default('llama-3.3-70b-versatile'),
     CORS_ORIGINS: z.string().default('http://localhost:3000'),
     RATE_LIMIT_WINDOW_MS: z.string().default('60000'),
     RATE_LIMIT_MAX_REQUESTS: z.string().default('100'),
@@ -44,9 +44,10 @@ export const env = {
     port: parseInt(parsed.data.PORT, 10),
     nodeEnv: parsed.data.NODE_ENV,
     databaseUrl: parsed.data.DATABASE_URL,
-    geminiApiKey: parsed.data.GEMINI_API_KEY,
-    geminiModel: parsed.data.GEMINI_MODEL,
+    groqApiKey: parsed.data.GROQ_API_KEY,
+    groqModel: parsed.data.GROQ_MODEL,
     corsOrigins: parsed.data.CORS_ORIGINS.split(',').map((s) => s.trim()),
     rateLimitWindowMs: parseInt(parsed.data.RATE_LIMIT_WINDOW_MS, 10),
     rateLimitMaxRequests: parseInt(parsed.data.RATE_LIMIT_MAX_REQUESTS, 10),
 } as const;
+

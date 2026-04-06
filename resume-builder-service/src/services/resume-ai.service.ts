@@ -1,4 +1,4 @@
-import { GeminiProvider } from '../providers/gemini.provider';
+import { GroqProvider } from '../providers/groq.provider';
 import { ResumePromptFactory } from '../prompts/resume-prompt.factory';
 import { extractJsonFromText } from '../utils/json-extract.util';
 import { mergeResumeData } from '../utils/resume-merge.util';
@@ -7,7 +7,7 @@ import { ChatMessage } from '../db/schema/chat-messages';
 import { AppError } from '../utils/app-error';
 
 /**
- * The shape of the structured response we expect from Gemini.
+ * The shape of the structured response we expect from Groq.
  * This matches what the system prompt asks for.
  */
 export interface AIResumeResponse {
@@ -27,7 +27,7 @@ export interface AIResumeResponse {
  * 
  * 1. Takes the user message + current context
  * 2. Builds the AI prompt
- * 3. Calls Gemini
+ * 3. Calls Groq (llama-3.3-70b-versatile)
  * 4. Parses the structured JSON response
  * 5. Merges new data into existing draft
  * 6. Returns the result for the controller to save and respond
@@ -36,11 +36,11 @@ export interface AIResumeResponse {
  * This keeps the service focused on AI logic only.
  */
 export class ResumeAIService {
-    private geminiProvider: GeminiProvider;
+    private groqProvider: GroqProvider;
     private promptFactory: ResumePromptFactory;
 
     constructor() {
-        this.geminiProvider = new GeminiProvider();
+        this.groqProvider = new GroqProvider();
         this.promptFactory = new ResumePromptFactory();
     }
 
@@ -68,15 +68,15 @@ export class ResumeAIService {
             currentMissingFields
         );
 
-        // 2. Call Gemini
-        const rawResponse = await this.geminiProvider.generateContent(systemPrompt, userPrompt);
+        // 2. Call Groq
+        const rawResponse = await this.groqProvider.generateContent(systemPrompt, userPrompt);
 
         // 3. Parse the JSON response
         const parsed = extractJsonFromText(rawResponse);
 
         if (!parsed) {
-            // Gemini returned something we can't parse — return a graceful fallback
-            console.error('[ResumeAIService] Failed to parse Gemini response');
+            // Groq returned something we can't parse — return a graceful fallback
+            console.error('[ResumeAIService] Failed to parse Groq response');
             return this.buildFallbackResponse(currentResume, currentMissingFields, rawResponse);
         }
 
