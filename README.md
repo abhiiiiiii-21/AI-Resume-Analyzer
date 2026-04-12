@@ -27,7 +27,6 @@ talvix/
 │   ├── app/                  # Application routing and pages
 │   ├── components/           # Reusable React components (UI, layout, etc.)
 │   └── lib/                  # Utility functions and shared logic
-├── resume-builder-service/   # Dedicated microservice for resume generation
 └── diagrams/                 # Architecture and application flow diagrams
 ```
 
@@ -97,18 +96,3 @@ Ensure the following environment variables are correctly configured in your `.en
 - Integration with external job boards for direct application submissions.
 - Enhanced analytics tracking for user engagement and feature usage.
 - Advanced export options (e.g., direct to PDF, Word, or specific ATS formats).
-
-## Contributing
-Contributions are welcome! Please follow these steps to contribute:
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
-
-## License
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## Author
-**Abhishek Kumar Patel**
-- GitHub: [@abhiiiiiii-21](https://github.com/abhiiiiiii-21)
