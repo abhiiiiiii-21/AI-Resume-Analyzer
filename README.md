@@ -113,45 +113,64 @@ This layered architecture ensures scalability, maintainability, and clean separa
 ### UML Diagrams
 
 ![Class Diagram](./diagrams/Class_Diagram/final.png)
+<br><br>
 
 ![Class Breakdown 1](./diagrams/Class_Diagram/1.png)
+<br><br>
 ![Class Breakdown 2](./diagrams/Class_Diagram/2.png)
+<br><br>
 
 ![Class Breakdown 3](./diagrams/Class_Diagram/3.png)
+<br><br>
 ![Class Breakdown 4](./diagrams/Class_Diagram/4.png)
+<br><br>
 
 ![Class Breakdown 5](./diagrams/Class_Diagram/5.png)
+<br><br>
 ![Class Breakdown 6](./diagrams/Class_Diagram/6.png)
 
-<br>
+<br><br>
 
 ### Database Schema
 
 ![ER Diagram](./diagrams/ER_Diagram/1.png)
+<br><br>
 ![ER Diagram](./diagrams/ER_Diagram/2.png)
+<br><br>
 ![ER Diagram](./diagrams/ER_Diagram/3.png)
+<br><br>
 ![ER Diagram](./diagrams/ER_Diagram/4.png)
+<br><br>
 ![ER Diagram](./diagrams/ER_Diagram/5.png)
 
-<br>
+<br><br>
 
 ### Sequence Diagrams
 
 ![Sequence Diagram](./diagrams/Sequence_Diagram/1.png)
+<br><br>
 ![Sequence Diagram](./diagrams/Sequence_Diagram/2.png)
+<br><br>
 ![Sequence Diagram](./diagrams/Sequence_Diagram/3.png)
+<br><br>
 ![Sequence Diagram](./diagrams/Sequence_Diagram/4.png)
+<br><br>
 ![Sequence Diagram](./diagrams/Sequence_Diagram/5.png)
 
-<br>
+<br><br>
 
 ### Use Case Diagram
 
 ![Use Case Diagram](./diagrams/Use_Case_Diagram/1.png)
+<br><br>
 ![Use Case Diagram](./diagrams/Use_Case_Diagram/2.png)
+<br><br>
 ![Use Case Diagram](./diagrams/Use_Case_Diagram/3.png)
+<br><br>
 ![Use Case Diagram](./diagrams/Use_Case_Diagram/4.png)
+<br><br>
 ![Use Case Diagram](./diagrams/Use_Case_Diagram/5.png)
+<br><br>
 ![Use Case Diagram](./diagrams/Use_Case_Diagram/6.png)
 
 </div>
