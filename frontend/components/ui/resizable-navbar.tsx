@@ -154,7 +154,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                 transition={{ duration: 0.2 }}
                 className="absolute top-full pt-4 z-50 left-1/2 -translate-x-1/2"
               >
-                <div className="bg-white dark:bg-neutral-950 rounded-xl border dark:border-neutral-800 shadow-xl p-2 w-[300px]">
+                <div className="bg-white dark:bg-neutral-950 rounded-xl border dark:border-neutral-800 p-2 w-[300px]">
                   <ul className="grid w-full">
                     {item.children.map((childItem, childIdx) => (
                       <li key={childIdx} className="group list-none">

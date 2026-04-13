@@ -29,7 +29,6 @@
   <a href="#-tech-stack">Tech Stack</a>
   <br>
 </div>
-
 <hr>
 
 ## ◈ Project Overview
@@ -183,21 +182,24 @@ This layered architecture ensures scalability, maintainability, and clean separa
 
 ```text
 resumind/
-├── backend/
-│   ├── prisma/
-│   └── src/
-├── frontend/
-│   ├── app/
-│   ├── components/
-│   └── lib/
-├── diagrams/
-│   ├── class/
-│   ├── er/
-│   ├── sequence/
-│   └── usecase/
+├── backend/                  # Node.js backend services and API routes
+│   ├── prisma/               # Database schema and migrations
+│   └── src/                  # Backend source code and controllers
+├── frontend/                 # Next.js frontend application
+│   ├── app/                  # Application routing and pages
+│   ├── components/           # Reusable React components (UI, layout, etc.)
+│   └── lib/                  # Utility functions and shared logic
+└── diagrams/                 # Architecture and application flow diagrams
 ```
 
 <br>
+
+## ◈ Application Flow
+1. **Landing Page**: Users are introduced to Resumind's value proposition and core features.
+2. **Authentication**: Users sign up or log in securely via Clerk (Google or Email).
+3. **Dashboard**: Upon authentication, users are redirected to their personalized dashboard to view past analyses or start a new one.
+4. **Enhancement Module**: Users upload their resume or input their data. The AI processes the information and presents a detailed, actionable enhancement report.
+5. **Export**: Users can export their optimized resume or save the feedback for future reference.
 
 ## ◈ Installation
 
