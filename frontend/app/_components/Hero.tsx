@@ -10,7 +10,7 @@ import { LogoCloud } from '@/components/logo-cloud'
 
 const Hero = () => {
   return (
-    <div className="min-h-screen w-full relative">
+    <div className="min-h-screen w-full relative pb-30">
 
       {/* Base background color */}
       <div className="absolute inset-0 z-0 bg-white" />
