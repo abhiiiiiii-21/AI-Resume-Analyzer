@@ -12,7 +12,7 @@ app.use(express.json());
 const atsRouter = require('./routes/atsRoutes');
 app.use('/api/ats', atsRouter);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
   console.log(`Backend Server running on port ${PORT}`);
