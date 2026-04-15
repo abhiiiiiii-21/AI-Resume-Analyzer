@@ -1,272 +1,545 @@
 "use client";
-
 import React, { useState, useRef } from 'react';
-import ScoreCard from '../../components/ats/ScoreCard';
-import SkillsList from '../../components/ats/SkillsList';
-import SuggestionsList from '../../components/ats/SuggestionsList';
+import CircularScore from '../../components/ats/CircularScore';
+import SectionScores from '../../components/ats/SectionScores';
+import KeywordDensity from '../../components/ats/KeywordDensity';
+import {
+  Layers, UploadCloud, FileText, X, Sparkles,
+  CheckCircle2, XCircle, AlertCircle, TrendingUp,
+  BarChart3, Target, ArrowRight, RefreshCw, Download
+} from 'lucide-react';
 
-export default function ATSDashboard() {
-  const [inputType, setInputType] = useState('file');
-  const [resumeText, setResumeText] = useState("");
-  const [resumeFile, setResumeFile] = useState(null);
-  const [jobSkills, setJobSkills] = useState("");
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef(null);
+function cls(...args) { return args.filter(Boolean).join(' '); }
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+/* ── Card ── */
+const Card = ({ children, className }) => (
+  <div className={cls('bg-[#111827]/80 backdrop-blur-[12px] border border-white/5 rounded-[16px] shadow-lg hover:shadow-xl transition-all duration-300', className)}>
+    {children}
+  </div>
+);
 
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
+/* ── Step bar ── */
+const STEPS = ['Upload', 'Keywords', 'Analyze', 'Results'];
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      validateAndSetFile(e.dataTransfer.files[0]);
-    }
-  };
+function StepBar({ step }) {
+  return (
+    <div className="relative flex items-center justify-between mb-10 px-1">
+      <div className="absolute top-3 left-0 right-0 h-px bg-white/5" />
+      <div
+        className="absolute top-3 left-0 h-px bg-gradient-to-r from-[#3B82F6] to-[#6366F1] transition-all duration-500"
+        style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
+      />
+      {STEPS.map((label, i) => {
+        const done   = step >  i + 1;
+        const active = step === i + 1;
+        return (
+          <div key={label} className="flex flex-col items-center z-10">
+            <div className={cls(
+              'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all duration-300',
+              done    ? 'bg-[#3B82F6] border-[#3B82F6] text-[#F9FAFB] shadow-[0_0_10px_rgba(59,130,246,0.3)]' :
+              active  ? 'bg-[#0B0F19] border-[#6366F1] text-[#6366F1] shadow-[0_0_15px_rgba(99,102,241,0.2)]' :
+                        'bg-[#0B0F19] border-white/5 text-[#9CA3AF]'
+            )}>
+              {done ? <CheckCircle2 size={12} /> : i + 1}
+            </div>
+            <span className={cls(
+              'text-[9px] font-bold uppercase tracking-widest mt-2 transition-colors',
+              active || done ? 'text-[#F9FAFB]' : 'text-[#9CA3AF]'
+            )}>{label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      validateAndSetFile(e.target.files[0]);
-    }
-  };
+/* ── Drop zone ── */
+function DropZone({ file, onFile, disabled }) {
+  const [dragging, setDragging] = useState(false);
+  const ref = useRef(null);
 
-  const validateAndSetFile = (file) => {
-    const validTypes = [
-      'application/pdf', 
+  const accept = (f) => {
+    const ok = [
+      'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/msword'
-    ];
-    if (validTypes.includes(file.type)) {
-      setResumeFile(file);
-      setError(null);
-    } else {
-      setError("Unsupported format. Please upload PDF or DOCX.");
-      setResumeFile(null);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      let response;
-      if (inputType === 'file' && resumeFile) {
-        const formData = new FormData();
-        formData.append('resumeFile', resumeFile);
-        formData.append('jobSkills', jobSkills);
-
-        response = await fetch("http://localhost:5001/api/ats/calculate-file", {
-          method: "POST",
-          body: formData
-        });
-      } else {
-        response = await fetch("http://localhost:5001/api/ats/calculate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ resumeText, jobSkills })
-        });
-      }
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || "Failed to calculate ATS score");
-      }
-
-      const data = await response.json();
-      setResult(data);
-    } catch (err) {
-      setError(err.message || "An error occurred while calculating the ATS score.");
-    } finally {
-      setLoading(false);
-    }
+      'application/msword',
+    ].includes(f?.type);
+    if (ok) onFile(f);
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-slate-900 selection:bg-blue-500/30 py-16 px-4 sm:px-6 lg:px-8 font-sans overflow-x-hidden relative">
-      
-      {/* Light dot pattern background to match theme */}
-      <div className="absolute inset-0 z-0 opacity-[0.35] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#94A3B8 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
-
-      <div className="max-w-6xl mx-auto space-y-12 relative z-10">
-        
-        <div className="text-center space-y-5">
-          <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 mb-2 transition-all hover:bg-blue-100 shadow-sm">
-            <span className="text-xs font-bold text-white bg-blue-600 px-2 py-0.5 rounded-full mr-2">NEW</span>
-            <span className="text-sm font-medium text-blue-600 cursor-default">Intelligent ATS Scanner &rsaquo;</span>
+    <div
+      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => { e.preventDefault(); setDragging(false); accept(e.dataTransfer.files[0]); }}
+      onClick={() => !disabled && !file && ref.current?.click()}
+      className={cls(
+        'relative flex flex-col items-center justify-center rounded-[16px] border border-dashed transition-all duration-300 overflow-hidden',
+        disabled ? 'opacity-40 pointer-events-none' : 'cursor-pointer',
+        dragging  ? 'border-[#3B82F6] bg-[#3B82F6]/5 scale-[1.03]' :
+        file      ? 'border-[#6366F1]/50 bg-[#6366F1]/5 h-24' :
+                    'border-white/10 bg-[#111827]/40 hover:border-[#6366F1]/40 hover:bg-[#111827]/60 h-44'
+      )}
+    >
+      {file ? (
+        <div className="flex items-center gap-4 w-full px-5">
+          <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center shrink-0">
+            <FileText size={18} className="text-[#6366F1]" />
           </div>
-          
-          <h1 className="text-5xl md:text-6xl font-black tracking-tight text-slate-900 leading-[1.1]">
-            Build Smarter Resumes.<br/>
-            Get Hired Faster <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">with AI</span>
-          </h1>
-          
-          <p className="max-w-2xl mx-auto text-lg text-slate-500 font-normal leading-relaxed">
-            Create, optimize, and analyze your resume with AI-powered tools from ATS scoring to role-based enhancements, all in one place.
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-[#F9FAFB] truncate">{file.name}</p>
+            <p className="text-xs text-[#9CA3AF] mt-0.5">{(file.size / 1024).toFixed(0)} KB · Ready</p>
+          </div>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onFile(null); }}
+            className="p-1.5 text-[#9CA3AF] hover:text-[#EF4444] transition-colors rounded-lg hover:bg-white/5">
+            <X size={14} />
+          </button>
+        </div>
+      ) : (
+        <div className="text-center px-6 group">
+          <div className="w-12 h-12 rounded-[16px] bg-[#111827]/80 border border-white/5 mx-auto mb-3 flex items-center justify-center transition-all group-hover:bg-[#3B82F6]/10 group-hover:scale-[1.05] group-hover:border-[#3B82F6]/20 shadow-lg">
+            <UploadCloud size={22} className="text-[#9CA3AF] group-hover:text-[#3B82F6] transition-colors" />
+          </div>
+          <p className="text-sm font-semibold text-[#9CA3AF]">Drop file or <span className="text-[#3B82F6] underline underline-offset-4 decoration-[#3B82F6]/30">browse</span></p>
+          <p className="text-xs text-[#9CA3AF]/60 mt-1">PDF · DOCX · Max 5 MB</p>
+        </div>
+      )}
+      <input ref={ref} type="file" className="hidden" accept=".pdf,.doc,.docx"
+        onChange={(e) => accept(e.target.files[0])} />
+    </div>
+  );
+}
+
+/* ── Keyword chips ── */
+const SUGGESTIONS = ['React.js', 'Node.js', 'TypeScript', 'AWS', 'Python', 'Docker', 'SQL'];
+
+function ChipInput({ chips, setChips, disabled }) {
+  const [val, setVal] = useState('');
+
+  const add = (str) => {
+    const v = str.trim();
+    if (v && !chips.includes(v)) setChips([...chips, v]);
+    setVal('');
+  };
+
+  const onKey = (e) => {
+    if (e.key === 'Enter')     { e.preventDefault(); add(val); }
+    if (e.key === 'Backspace' && !val && chips.length) setChips(chips.slice(0, -1));
+  };
+
+  return (
+    <div className={cls(
+      'bg-[#111827]/40 border rounded-[16px] p-4 transition-all focus-within:border-[#3B82F6]/50 focus-within:ring-1 focus-within:ring-[#3B82F6]/20 shadow-inner',
+      disabled ? 'border-white/5 opacity-40 pointer-events-none' : 'border-white/5 hover:border-white/10'
+    )}>
+      <div className="flex flex-wrap gap-2 mb-3 min-h-[28px]">
+        {chips.map((c) => (
+          <span key={c} className="flex items-center gap-1.5 px-3 py-1 bg-[#3B82F6]/10 border border-[#3B82F6]/20 text-[#3B82F6] rounded-lg text-xs font-semibold tracking-wide">
+            {c}
+            <button type="button" onClick={() => setChips(chips.filter((x) => x !== c))}>
+              <X size={12} className="hover:text-[#F9FAFB] transition-colors" />
+            </button>
+          </span>
+        ))}
+        <input
+          type="text" value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={onKey}
+          placeholder={chips.length === 0 ? 'Type keyword → Enter...' : 'Add more...'}
+          className="flex-1 min-w-[120px] bg-transparent text-sm text-[#F9FAFB] placeholder:text-[#9CA3AF]/50 focus:outline-none py-0.5"
+        />
+      </div>
+
+      {chips.length === 0 && (
+        <div className="pt-4 border-t border-white/5">
+          <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest mb-3">Suggestions</p>
+          <div className="flex flex-wrap gap-2">
+            {SUGGESTIONS.map((s) => (
+              <button key={s} type="button" onClick={() => add(s)}
+                className="text-[10px] px-2.5 py-1 bg-white/5 text-[#9CA3AF] border border-white/5 rounded-lg hover:bg-[#3B82F6]/10 hover:text-[#3B82F6] hover:border-[#3B82F6]/20 transition-all font-medium">
+                + {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Scanning animation ── */
+function ScanningView({ progress }) {
+  return (
+    <div className="h-full flex flex-col items-center justify-center px-10 py-20 relative z-10">
+      <div className="relative w-full max-w-sm h-72 rounded-[16px] bg-[#111827]/80 backdrop-blur-[12px] border border-white/5 overflow-hidden flex items-center justify-center shadow-2xl mb-10">
+        <FileText size={88} className="text-white/5" />
+        <div className="absolute left-4 right-4 h-[2px] bg-gradient-to-r from-transparent via-[#6366F1] to-transparent shadow-[0_0_15px_#3B82F6] animate-[scan_1.8s_ease-in-out_infinite]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#3B82F6]/5 via-transparent to-transparent animate-pulse pointer-events-none" />
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes scan {
+            0%   { top: 5%;  opacity: 0; }
+            5%   { opacity: 1; }
+            95%  { opacity: 1; }
+            100% { top: 95%; opacity: 0; }
+          }
+        ` }} />
+      </div>
+      <p className="text-lg font-black text-[#F9FAFB] mb-2 animate-pulse">Running AI Analysis Engine</p>
+      <p className="text-sm text-[#3B82F6] font-mono tracking-widest mb-6 font-bold">SCORING RESUME · {progress}%</p>
+      <div className="w-64 h-1.5 bg-[#111827] border border-white/5 shadow-inner rounded-full overflow-hidden">
+        <div className="h-full bg-gradient-to-r from-[#3B82F6] to-[#6366F1] rounded-full transition-all duration-300"
+          style={{ width: `${progress}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/* ── Empty state ── */
+function EmptyDashboard() {
+  return (
+    <div className="h-full flex items-center justify-center p-10 relative z-10">
+      <div className="text-center max-w-sm">
+        <div className="w-20 h-20 rounded-[16px] bg-[#111827]/60 border border-white/5 flex items-center justify-center mx-auto mb-6 shadow-lg backdrop-blur-md">
+          <BarChart3 size={32} className="text-[#9CA3AF]/60" />
+        </div>
+        <h3 className="text-xl font-bold text-[#F9FAFB] mb-3">Awaiting Analysis</h3>
+        <p className="text-sm text-[#9CA3AF] leading-relaxed">
+          Upload your resume on the left and enter target job keywords to run a complete ATS compatibility scan.
+        </p>
+        <div className="mt-8 grid grid-cols-2 gap-4 text-left">
+          {['Upload PDF or DOCX', 'Add job keywords', 'Run AI analysis', 'Get instant score'].map((t, i) => (
+            <div key={t} className="flex items-center gap-3 text-xs text-[#9CA3AF] font-medium">
+              <span className="w-5 h-5 rounded-lg bg-[#111827] border border-white/5 text-[9px] flex items-center justify-center font-bold text-[#F9FAFB]/70 shadow-inner">{i + 1}</span>
+              {t}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Result dashboard ── */
+function ResultDashboard({ result, file, onReset }) {
+  const { score, matchedSkills, missingSkills, suggestions, keywordDensity, sectionScores, aiSummary, atsCompatible } = result;
+
+  return (
+    <div className="p-6 md:p-10 space-y-6 max-w-5xl mx-auto relative z-10 min-h-screen">
+
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#22C55E] bg-[rgba(34,197,94,0.1)] px-3 py-1 rounded-full border border-[#22C55E]/20 mb-4 shadow-sm">
+            <CheckCircle2 size={11} /> Analysis Complete
+          </div>
+          <h1 className="text-3xl font-black text-[#F9FAFB] tracking-tight">ATS Score Report</h1>
+          <p className="text-xs text-[#9CA3AF] mt-2 font-medium">
+            Analyzed just now &nbsp;·&nbsp; <span className="text-[#F9FAFB]/70">{file?.name}</span> &nbsp;·&nbsp; {(file?.size / 1024).toFixed(0)} KB
           </p>
         </div>
+        <button onClick={onReset}
+          className="flex items-center gap-2 text-xs font-bold text-[#9CA3AF] hover:text-[#F9FAFB] bg-[#111827]/80 hover:bg-[#111827] border border-white/5 px-4 py-2.5 rounded-[12px] transition-all shadow-md backdrop-blur-md">
+          <RefreshCw size={13} /> New Scan
+        </button>
+      </div>
 
-        <div className="bg-white border border-slate-200 px-8 py-10 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
-          
-          <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
-            
-            <div className="flex justify-center mb-8">
-              <div className="bg-slate-100/80 p-1.5 rounded-full inline-flex border border-slate-200 shadow-inner">
-                <button 
-                  type="button" 
-                  onClick={() => setInputType('file')}
-                  className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${inputType === 'file' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Upload File
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setInputType('text')}
-                  className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${inputType === 'text' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Paste Text
-                </button>
-              </div>
+      {/* Score + Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <Card className="md:col-span-4 p-8 flex flex-col items-center justify-center text-center relative hover:-translate-y-1">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#3B82F6]/5 to-transparent pointer-events-none rounded-[16px]" />
+          <CircularScore score={score} />
+          <div className={cls(
+            'mt-6 px-5 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest shadow-sm',
+            atsCompatible
+              ? 'bg-[rgba(34,197,94,0.1)] border-[#22C55E]/20 text-[#22C55E]'
+              : 'bg-[rgba(239,68,68,0.1)] border-[#EF4444]/20 text-[#EF4444]'
+          )}>
+            {atsCompatible ? 'ATS Compatible ✓' : 'Needs Improvement'}
+          </div>
+        </Card>
+
+        <div className="md:col-span-8 space-y-6">
+          <Card className="p-6 flex items-start gap-5 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#3B82F6]/10 to-[#6366F1]/10 pointer-events-none transition-opacity group-hover:opacity-80" />
+            <div className="absolute -left-px top-0 bottom-0 w-1 bg-gradient-to-b from-[#3B82F6] to-[#6366F1] shadow-[0_0_10px_#6366F1]" />
+            <div className="shrink-0 w-12 h-12 rounded-[14px] bg-[#0B0F19] border border-[#6366F1]/30 flex items-center justify-center shadow-inner relative z-10">
+              <Sparkles size={20} className="text-[#6366F1]" />
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              
-              <div className="flex flex-col group">
-                <label className="text-sm font-bold text-slate-800 mb-3 flex items-center">
-                  <span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-md flex items-center justify-center mr-2 text-xs">1</span> 
-                  Submit Resume
-                </label>
-                
-                {inputType === 'file' ? (
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-2xl transition-all duration-300 h-[280px] bg-slate-50 relative
-                      ${isDragging ? 'border-blue-500 bg-blue-50 scale-[1.02]' : 'border-slate-200 hover:border-blue-400 hover:bg-slate-50/50'}
-                      ${resumeFile ? 'border-emerald-400 bg-emerald-50' : ''}`}
-                  >
-                    {!resumeFile ? (
-                      <div className="text-center transform transition-transform group-hover:-translate-y-1">
-                        <div className="w-16 h-16 bg-white border border-slate-200 shadow-sm rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 group-hover:text-blue-500 transition-colors">
-                          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                        </div>
-                        <p className="text-sm text-slate-800 font-semibold mb-1">Drag & drop your resume</p>
-                        <p className="text-xs text-slate-500 mb-4">PDF or DOCX documents up to 5MB</p>
-                        <label className="cursor-pointer bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 transition-all">
-                          Browse Computer
-                          <input type="file" className="sr-only" accept=".pdf,.doc,.docx" onChange={handleFileChange} ref={fileInputRef} />
-                        </label>
-                      </div>
-                    ) : (
-                      <div className="text-center w-full animate-in zoom-in-95 duration-300">
-                        <div className="w-20 h-20 bg-emerald-100 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600 relative shadow-sm">
-                          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          <button type="button" onClick={() => setResumeFile(null)} className="absolute -top-2 -right-2 bg-white border border-slate-200 shadow-sm text-slate-400 hover:text-red-500 rounded-full p-1.5 transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                          </button>
-                        </div>
-                        <p className="text-base font-bold text-slate-800 truncate px-4 max-w-full">{resumeFile.name}</p>
-                        <p className="text-xs text-emerald-600 font-medium mt-2">Ready to scan</p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <textarea
-                    required={inputType === 'text'}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-700 shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all font-mono text-sm resize-none h-[280px] custom-scrollbar"
-                    placeholder="const resume = {&#10;  skills: ['React', 'Node.js', 'TypeScript'],&#10;  experience: '5 years'&#10;};&#10;&#10;// Paste raw resume text here..."
-                    value={resumeText}
-                    onChange={(e) => setResumeText(e.target.value)}
-                  />
-                )}
-              </div>
-
-              <div className="flex flex-col group">
-                <label className="text-sm font-bold text-slate-800 mb-3 flex items-center">
-                  <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-md flex items-center justify-center mr-2 text-xs">2</span> 
-                  Job Description Targets
-                </label>
-                <textarea
-                  required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-700 shadow-inner focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all font-mono text-sm resize-none h-[280px] custom-scrollbar leading-relaxed"
-                  placeholder="Enter required keywords (comma separated)&#10;&#10;E.g. react, typescript, tailwindcss, aws, python, sql, agile"
-                  value={jobSkills}
-                  onChange={(e) => setJobSkills(e.target.value)}
-                />
-              </div>
+            <div className="relative z-10">
+              <p className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest mb-2">AI Intelligence Summary</p>
+              <p className="text-sm text-[#F9FAFB]/90 leading-relaxed font-medium">{aiSummary}</p>
             </div>
+          </Card>
 
-            <div className="pt-4 flex justify-center">
-              <button
-                type="submit"
-                disabled={loading || (inputType === 'file' && !resumeFile)}
-                className="w-48 flex justify-center items-center py-4 px-8 rounded-full text-base font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:grayscale transition-all duration-300 shadow-[0_8px_20px_rgba(37,99,235,0.3)] shadow-blue-500/30 group relative"
-              >
-                {loading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    Scanning...
-                  </span>
-                ) : (
-                  <>
-                    <span className="mr-2">Get Started</span>
-                    <svg className="w-4 h-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 19L19 5M19 5v10M19 5H9" /></svg>
-                  </>
-                )}
-              </button>
+          <div className="grid grid-cols-3 gap-6">
+            {[
+              { label: 'Matched', value: matchedSkills.length, sub: 'found', color: 'text-[#22C55E]' },
+              { label: 'Missing', value: missingSkills.length, sub: 'absent', color: 'text-[#EF4444]' },
+              { label: 'Actions', value: suggestions.length, sub: 'tips', color: 'text-[#3B82F6]' },
+            ].map(({ label, value, sub, color }) => (
+              <Card key={label} className="p-5 text-center relative hover:-translate-y-1 hover:border-white/10">
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none rounded-[16px]" />
+                <div className={cls("text-4xl font-black drop-shadow-md mb-1", color)}>{value}</div>
+                <div className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">{label}</div>
+                <div className="text-[9px] text-[#9CA3AF]/50 mt-1">{sub}</div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Section breakdown + keyword density */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="p-7">
+          <div className="flex items-center gap-3 mb-7">
+            <div className="p-2 bg-[#0B0F19] rounded-lg border border-white/5">
+              <Target size={16} className="text-[#6366F1]" />
             </div>
-            
-            {error && (
-              <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-start animate-in slide-in-from-top-2">
-                <svg className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <p className="text-red-700 text-sm font-semibold">{error}</p>
+            <h3 className="text-sm font-bold text-[#F9FAFB]">Section Breakdown</h3>
+          </div>
+          <SectionScores scores={sectionScores} />
+        </Card>
+        <Card className="p-7">
+          <div className="flex items-center gap-3 mb-7">
+            <div className="p-2 bg-[#0B0F19] rounded-lg border border-white/5">
+              <TrendingUp size={16} className="text-[#3B82F6]" />
+            </div>
+            <h3 className="text-sm font-bold text-[#F9FAFB]">Keyword Density</h3>
+          </div>
+          <KeywordDensity keywordDensity={keywordDensity} />
+        </Card>
+      </div>
+
+      {/* Matched / Missing */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="p-7">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#0B0F19] rounded-lg border border-[#22C55E]/20">
+                <CheckCircle2 size={16} className="text-[#22C55E]" />
               </div>
-            )}
-          </form>
+              <h3 className="text-sm font-bold text-[#F9FAFB]">Found Keywords</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-[#0B0F19] text-[#9CA3AF] px-2.5 py-1 rounded-lg border border-white/5">{matchedSkills.length}</span>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {matchedSkills.length > 0
+              ? matchedSkills.map((s) => (
+                  <span key={s} className="px-3.5 py-1.5 bg-[rgba(34,197,94,0.1)] border border-[#22C55E]/20 text-[#22C55E] text-xs font-semibold rounded-[10px] capitalize shadow-sm tracking-wide">{s}</span>
+                ))
+              : <p className="text-[#9CA3AF] text-sm italic">No exact matches found.</p>
+            }
+          </div>
+        </Card>
+
+        <Card className="p-7">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#0B0F19] rounded-lg border border-[#EF4444]/20">
+                <XCircle size={16} className="text-[#EF4444]" />
+              </div>
+              <h3 className="text-sm font-bold text-[#F9FAFB]">Missing Keywords</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-[#0B0F19] text-[#9CA3AF] px-2.5 py-1 rounded-lg border border-white/5">{missingSkills.length}</span>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {missingSkills.length > 0
+              ? missingSkills.map((s) => (
+                  <span key={s} className="px-3.5 py-1.5 bg-[rgba(239,68,68,0.1)] border border-[#EF4444]/20 text-[#EF4444] text-xs font-semibold rounded-[10px] capitalize shadow-sm tracking-wide">{s}</span>
+                ))
+              : <p className="text-[#22C55E] text-sm font-semibold bg-[rgba(34,197,94,0.1)] px-3 py-1.5 rounded-lg inline-block">All keywords detected ✓</p>
+            }
+          </div>
+        </Card>
+      </div>
+
+      {/* Suggestions */}
+      <Card className="p-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#6366F1]/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-10 h-10 rounded-[12px] bg-[#111827] border border-white/5 flex items-center justify-center shadow-inner relative z-10">
+            <Sparkles size={18} className="text-[#3B82F6]" />
+          </div>
+          <h3 className="text-lg font-black text-[#F9FAFB] tracking-wide relative z-10">AI Recommendations</h3>
+          <span className="text-[10px] font-bold bg-[#0B0F19] border border-white/5 text-[#3B82F6] px-3 py-1 rounded-lg ml-auto relative z-10 shadow-sm">{suggestions.length} actions</span>
         </div>
 
-        {result && (
-          <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 ease-out pb-20">
-            <h2 className="text-2xl font-black text-slate-800 mb-8 flex items-center">
-              Scan Results
-              <span className="ml-4 w-12 h-1 bg-blue-600 rounded-full inline-block"></span>
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-4">
-                <ScoreCard score={result.score} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+          {suggestions.map((s, i) => (
+            <div key={i} className="flex items-start gap-4 bg-[#0B0F19]/50 border border-white/5 rounded-[14px] p-5 hover:bg-[#0B0F19] hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 shadow-sm">
+              <div className="mt-0.5 shrink-0 bg-white/5 p-1 rounded-md text-[#3B82F6]">
+                <ArrowRight size={14} />
               </div>
-              <div className="lg:col-span-8 space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <SkillsList title="Verified Hits" skills={result.matchedSkills} type="matched" />
-                  <SkillsList title="Missing Keywords" skills={result.missingSkills} type="missing" />
-                </div>
-                <SuggestionsList suggestions={result.suggestions} />
-              </div>
+              <p className="text-sm text-[#F9FAFB]/80 leading-relaxed font-medium">{s}</p>
             </div>
+          ))}
+        </div>
+
+        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+          <p className="text-xs text-[#9CA3AF] max-w-sm leading-relaxed">Apply these suggestions to significantly boost your resume's ATS compatibility and visibility to recruiters.</p>
+          <div className="flex w-full sm:w-auto gap-4">
+            <button onClick={() => window.print()}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-[#9CA3AF] hover:text-[#F9FAFB] bg-[#111827] hover:bg-[#111827]/80 border border-white/5 px-5 py-3 rounded-[12px] transition-all shadow-md">
+              <Download size={15} /> Export
+            </button>
+            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-[#3B82F6] to-[#6366F1] hover:scale-[1.03] px-6 py-3 rounded-[12px] transition-all shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] hover:shadow-[0_6px_20px_rgba(99,102,241,0.23)]">
+              Improve Resume <ArrowRight size={15} />
+            </button>
           </div>
-        )}
+        </div>
+      </Card>
+
+      <div className="pb-12" />
+    </div>
+  );
+}
+
+/* ── Main page ── */
+export default function ATSAnalyzerTool() {
+  const [step, setStep]               = useState(1);
+  const [resumeFile, setResumeFile]   = useState(null);
+  const [jobSkills, setJobSkills]     = useState([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [progress, setProgress]       = useState(0);
+  const [error, setError]             = useState(null);
+  const [result, setResult]           = useState(null);
+
+  const handleFile = (f) => {
+    setResumeFile(f);
+    setError(null);
+    if (f && step < 2) setStep(2);
+    if (!f && step >= 2) setStep(1);
+  };
+
+  const handleAnalyze = async () => {
+    if (!resumeFile)       return setError('Please upload a resume first.');
+    if (!jobSkills.length) return setError('Add at least one job keyword.');
+    setError(null);
+    setStep(3);
+    setIsAnalyzing(true);
+    setProgress(0);
+
+    const timer = setInterval(() =>
+      setProgress((p) => (p < 88 ? p + Math.floor(Math.random() * 14) + 3 : p)), 350);
+
+    try {
+      const fd = new FormData();
+      fd.append('resumeFile', resumeFile);
+      fd.append('jobSkills', jobSkills.join(', '));
+      const res = await fetch('http://localhost:5001/api/ats/calculate-file', { method: 'POST', body: fd });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Analysis failed'); }
+      const data = await res.json();
+      clearInterval(timer);
+      setProgress(100);
+      setTimeout(() => { setIsAnalyzing(false); setResult(data); setStep(4); }, 700);
+    } catch (e) {
+      clearInterval(timer);
+      setIsAnalyzing(false);
+      setError(e.message || 'Could not connect to server.');
+      setStep(jobSkills.length > 0 ? 2 : 1);
+    }
+  };
+
+  const handleReset = () => {
+    setResult(null); setResumeFile(null); setJobSkills([]);
+    setStep(1); setProgress(0); setError(null);
+  };
+
+  const canAnalyze = !isAnalyzing && resumeFile && jobSkills.length > 0;
+
+  return (
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#020617] text-[#F9FAFB] font-sans relative overflow-hidden">
+
+      {/* ── BACKGROUND ── */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div style={{ background: 'radial-gradient(circle at top, #111827 0%, #020617 100%)' }} className="absolute inset-0" />
+        
+        {/* Subtle Vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,6,23,0.4)_100%)]" />
+        
+        {/* Noise Texture */}
+        <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#3B82F6]/5 blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#6366F1]/5 blur-[120px]" />
       </div>
-      
-      <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
-      `}} />
+
+      {/* ── LEFT SIDEBAR ── */}
+      <aside className="w-full lg:w-[420px] shrink-0 flex flex-col h-screen sticky top-0 bg-[#020617]/90 backdrop-blur-xl border-r border-white/5 z-20 shadow-2xl overflow-y-auto">
+        <div className="flex flex-col flex-1 p-8 md:p-10">
+
+          {/* Logo */}
+          <div className="flex items-center gap-4 mb-12">
+            <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#3B82F6] to-[#6366F1] flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+              <Layers size={18} className="text-white" />
+            </div>
+            <span className="font-black text-[#F9FAFB] text-xl tracking-tight">Resumind</span>
+          </div>
+
+          <StepBar step={step} />
+
+          <div className="space-y-10 flex-1">
+
+            {/* Upload */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-[0.2em] flex items-center gap-2">
+                <span className="w-5 h-5 rounded-lg bg-[#111827] border border-white/5 text-[#F9FAFB]/70 flex items-center justify-center text-[9px] shadow-sm">1</span>
+                Upload Resume
+              </label>
+              <DropZone file={resumeFile} onFile={handleFile} disabled={isAnalyzing} />
+            </div>
+
+            {/* Keywords */}
+            <div className={cls('space-y-4 transition-all duration-500', step >= 2 ? 'opacity-100' : 'opacity-30 pointer-events-none')}>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-[0.2em] flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-lg bg-[#111827] border border-white/5 text-[#F9FAFB]/70 flex items-center justify-center text-[9px] shadow-sm">2</span>
+                  Job Context
+                </label>
+                {jobSkills.length > 0 && (
+                  <span className="text-[10px] font-bold text-[#3B82F6] bg-[#3B82F6]/10 px-2.5 py-1 rounded-lg border border-[#3B82F6]/20">{jobSkills.length} selected</span>
+                )}
+              </div>
+              <ChipInput chips={jobSkills} setChips={setJobSkills} disabled={isAnalyzing} />
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-3 text-[#EF4444] bg-[rgba(239,68,68,0.1)] border border-[#EF4444]/20 p-4 rounded-[14px] text-sm font-semibold shadow-sm">
+                <AlertCircle size={16} className="shrink-0" /> {error}
+              </div>
+            )}
+          </div>
+
+          {/* CTA */}
+          <div className="pt-10 mt-auto">
+            <button
+              onClick={handleAnalyze}
+              disabled={!canAnalyze}
+              className={cls(
+                'w-full py-4 rounded-[14px] text-[15px] font-bold tracking-wide flex items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden',
+                canAnalyze
+                  ? 'bg-gradient-to-r from-[#3B82F6] to-[#6366F1] text-white hover:scale-[1.02] shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] hover:shadow-[0_6px_20px_rgba(99,102,241,0.23)] active:scale-100'
+                  : 'bg-[#111827] text-[#9CA3AF]/50 cursor-not-allowed border border-white/5'
+              )}
+            >
+              {isAnalyzing
+                ? <><div className="w-5 h-5 border-[3px] border-white/20 border-t-white rounded-full animate-spin" /> Analyzing Document...</>
+                : <span className="flex items-center gap-2 drop-shadow-md">Analyze Resume <Sparkles size={16} className="ml-1" /></span>
+              }
+            </button>
+          </div>
+
+        </div>
+      </aside>
+
+      {/* ── RIGHT PANEL ── */}
+      <main className="flex-1 relative z-10 overflow-y-auto h-screen bg-transparent">
+        {isAnalyzing  && <ScanningView progress={progress} />}
+        {!isAnalyzing && !result && <EmptyDashboard />}
+        {!isAnalyzing && result  && <ResultDashboard result={result} file={resumeFile} onReset={handleReset} />}
+      </main>
+
     </div>
   );
 }
