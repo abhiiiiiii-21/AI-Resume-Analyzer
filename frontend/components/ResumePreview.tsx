@@ -7,7 +7,7 @@ import DefaultTheme from "./ResumeThemes/DefaultTheme";
 import ModernTheme from "./ResumeThemes/ModernTheme";
 import ProfessionalTheme from "./ResumeThemes/ProfessionalTheme";
 import CompactTheme from "./ResumeThemes/CompactTheme";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/Buttons/button";
 import { Download, Loader2, Sparkles } from "lucide-react";
 
 interface ResumePreviewProps {

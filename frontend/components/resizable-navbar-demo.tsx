@@ -47,7 +47,7 @@ export default function NavbarDemo() {
         },
         {
           title: "Manual Resume Builder",
-          href: "/manual-builder",
+          href: "/resume-builder",
           icon: <BookText strokeWidth={2} className="w-4 h-4" />,
           description: "Create resumes manually with full control",
         },
@@ -66,14 +66,14 @@ export default function NavbarDemo() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full font-manrope">
       <Navbar>
         {/* Desktop Navigation */}
         
         <NavBody>
           <NavbarLogo />
           <NavItems items={navItems} />
-          <div className="flex items-center gap-4">
+          <div className="flex flex-1 items-center justify-end">
             <NavbarButton variant="secondary">Login</NavbarButton>
             <NavbarButton variant="primary" className="rounded-full">Get Started</NavbarButton>
           </div>

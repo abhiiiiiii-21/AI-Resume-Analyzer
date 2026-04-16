@@ -5,7 +5,7 @@ import { Resume } from "@/types/resume";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/Buttons/button";
 import { Plus, Trash2, User, Briefcase, GraduationCap, Code, Award } from "lucide-react";
 
 interface ResumeFormProps {

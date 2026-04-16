@@ -1,8 +1,8 @@
 "use client"
 import HoverBorderGradientDemo from '@/components/hover-border-gradient-demo'
 import ShinyText from '@/components/ShinyText'
-import ButtonWithIconDemo from '@/components/ui/button-witn-icon'
-import { Button } from '@/components/ui/button'
+import ButtonWithIconDemo from '@/components/Buttons/button-witn-icon'
+import { Button } from '@/components/Buttons/button'
 import React from 'react'
 import Image from 'next/image'
 import { ContainerScroll } from '@/components/ui/container-scroll-animation'

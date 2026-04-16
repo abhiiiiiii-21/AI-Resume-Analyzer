@@ -6,7 +6,7 @@ import ResumePreview from "@/components/ResumePreview";
 import { Resume } from "@/types/resume";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/Buttons/button";
 import { ArrowLeft, Save, Loader2, FileText, Layout, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";

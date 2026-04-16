@@ -7,6 +7,7 @@ import {
   useScroll,
   useMotionValueEvent,
 } from "motion/react";
+import Image from "next/image";
 
 import React, { useRef, useState } from "react";
 
@@ -56,21 +57,11 @@ interface MobileNavMenuProps {
 }
 
 export const Navbar = ({ children, className }: NavbarProps) => {
-  const { scrollY } = useScroll();
-  const [visible, setVisible] = useState<boolean>(false);
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 100) {
-      setVisible(true);
-    } else {
-      setVisible(false);
-    }
-  });
+  const [visible, setVisible] = useState<boolean>(true);
 
   return (
-    <motion.div
-      // IMPORTANT: Changed to fixed to ensure it stays on top of the screen natively
-      className={cn("fixed inset-x-0 top-0 z-50 w-full pt-4", className)}
+    <div
+      className={cn("fixed inset-x-0 top-6 z-[60] w-full px-4 lg:px-8", className)}
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
@@ -80,37 +71,20 @@ export const Navbar = ({ children, className }: NavbarProps) => {
           )
           : child,
       )}
-    </motion.div>
+    </div>
   );
 };
 
 export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
-    <motion.div
-      animate={{
-        backdropFilter: visible ? "blur(10px)" : "none",
-        boxShadow: visible
-          ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
-          : "none",
-        width: visible ? "40%" : "100%",
-        y: visible ? 20 : 0,
-      }}
-      transition={{
-        type: "spring",
-        stiffness: 200,
-        damping: 50,
-      }}
-      style={{
-        minWidth: "800px",
-      }}
+    <div
       className={cn(
-        "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
-        visible && "bg-white/80 dark:bg-neutral-950/80",
+        "relative mx-auto hidden w-full max-w-[1100px] flex-row items-center justify-between gap-6 self-start rounded-full bg-[#1A1A1A]/90 backdrop-blur-xl border border-white/10 px-4 py-2.5 lg:flex shadow-2xl",
         className,
       )}
     >
       {children}
-    </motion.div>
+    </div>
   );
 };
 
@@ -121,26 +95,26 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2",
+        "hidden flex-1 flex-row items-center justify-center space-x-1 text-[15px] font-medium text-white/80 lg:flex lg:space-x-4",
         className,
       )}
     >
       {items.map((item, idx) => (
         <div
           onMouseEnter={() => setHovered(idx)}
-          className="relative flex items-center justify-center text-neutral-600 dark:text-neutral-300"
+          className="relative flex items-center justify-center"
           key={`link-${idx}`}
         >
           {hovered === idx && (
             <motion.div
               layoutId="hovered"
-              className="absolute inset-0 h-full w-full rounded-full bg-gray-100 dark:bg-neutral-800"
+              className="absolute inset-0 h-full w-full rounded-full bg-white/10"
             />
           )}
           <a
             href={item.link}
             onClick={onItemClick}
-            className="relative px-4 py-2 z-20 whitespace-nowrap"
+            className="relative px-3 py-2 z-20 whitespace-nowrap text-white/80 transition-colors hover:text-white"
           >
             {item.name}
           </a>
@@ -154,22 +128,22 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                 transition={{ duration: 0.2 }}
                 className="absolute top-full pt-4 z-50 left-1/2 -translate-x-1/2"
               >
-                <div className="bg-white dark:bg-neutral-950 rounded-xl border dark:border-neutral-800 p-2 w-[300px]">
-                  <ul className="grid w-full">
+                <div className="bg-[#1A1A1A] rounded-2xl border border-white/10 p-3 w-[320px] shadow-2xl backdrop-blur-xl">
+                  <ul className="grid w-full gap-1">
                     {item.children.map((childItem, childIdx) => (
                       <li key={childIdx} className="group list-none">
                         <a
                           href={childItem.href}
-                          className="flex gap-3 items-start rounded-md p-2 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+                          className="flex gap-4 items-start rounded-xl p-3 hover:bg-white/10 transition-colors"
                         >
-                          <div className="border rounded-sm p-2 flex items-center justify-center group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-colors">
+                          <div className="border border-white/10 rounded-lg p-2.5 flex items-center justify-center bg-white/5 text-white">
                             {childItem.icon}
                           </div>
                           <div className="text-left">
-                            <div className="text-sm font-medium leading-none text-black dark:text-white group-hover:text-black dark:group-hover:text-white transition-colors">
+                            <div className="text-sm font-medium leading-none text-white">
                               {childItem.title}
                             </div>
-                            <p className="text-neutral-500 dark:text-neutral-400 line-clamp-2 pt-1 text-xs leading-snug group-hover:text-black dark:group-hover:text-neutral-300 transition-colors">
+                            <p className="text-white/60 line-clamp-2 pt-1.5 text-xs leading-snug">
                               {childItem.description}
                             </p>
                           </div>
@@ -274,12 +248,15 @@ export const MobileNavToggle = ({
 
 export const NavbarLogo = () => {
   return (
-    <a
-      href="#"
-      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
-    >
-      <span className="font-medium text-black dark:text-white">Talvix</span>
-    </a>
+    <div className="flex flex-1 justify-start">
+      <a
+        href="#"
+        className="relative z-20 flex items-center space-x-2 px-2 py-1"
+      >
+        <span className="font-bold text-white text-lg tracking-tight">resumind</span>
+        {/* <Image src="/Logo/full.png" className="w-[130px] h-auto object-contain" alt="Logo" width={200} height={60} /> */}
+      </a>
+    </div>
   );
 };
 
@@ -301,15 +278,15 @@ export const NavbarButton = ({
     | React.ComponentPropsWithoutRef<"button">
   )) => {
   const baseStyles =
-    "px-4 py-2 rounded-md bg-white button bg-white text-black text-sm font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center whitespace-nowrap";
+    "px-5 py-2.5 rounded-full text-sm font-semibold relative inline-flex items-center justify-center cursor-pointer transition-none inline-block text-center whitespace-nowrap border border-transparent";
 
   const variantStyles = {
     primary:
-      "shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]",
-    secondary: "bg-transparent shadow-none dark:text-white",
-    dark: "bg-black text-white shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]",
+      "bg-[#1C4ED6] text-white",
+    secondary: "bg-transparent shadow-none text-white/80",
+    dark: "bg-black text-white",
     gradient:
-      "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
+      "bg-gradient-to-b from-blue-500 to-blue-700 text-white",
   };
 
   return (
