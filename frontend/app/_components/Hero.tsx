@@ -7,6 +7,7 @@ import React from 'react'
 import Image from 'next/image'
 import { ContainerScroll } from '@/components/ui/container-scroll-animation'
 import { LogoCloud } from '@/components/logo-cloud'
+import { Glitter } from '@/components/ui/glitter'
 
 const Hero = () => {
   return (
@@ -27,9 +28,35 @@ const Hero = () => {
       />
 
       <div className="relative z-10 w-full flex flex-col items-center justify-center">
+
+
+        <div className="absolute top-[40%] md:top-[50%] left-1/2 -translate-x-1/2 w-full md:w-[120vw] max-w-none -z-10 flex justify-center items-center pointer-events-none select-none -mt-60">
+
+          <div className="relative w-full flex justify-center">
+
+            {/* Glow Image */}
+            <Image
+              src="/Hero/Blue.webp"
+              alt="Blue Dashboard Glow"
+              width={6914}
+              height={5050}
+              sizes="120vw"
+              quality={100}
+              className="w-full h-auto object-contain scale-[1.2]"
+              priority
+            />
+
+            {/* ✨ Glitter Layer */}
+            <div className="absolute inset-0 pointer-events-none w-full h-full">
+               <Glitter density={0.08} size={1.2} />
+            </div>
+
+          </div>
+        </div>
+
         <ContainerScroll
           titleComponent={
-            <div className='flex flex-col items-center justify-center w-full px-4 gap-8 mb-8 md:mb-24'>
+            <div className='flex flex-col items-center justify-center w-full px-4 gap-8 mb-8 md:mb-24 mt-60'>
               <div className="">
                 <HoverBorderGradientDemo />
               </div>
@@ -58,10 +85,10 @@ const Hero = () => {
               </div>
 
               <div className='flex flex-row justify-center gap-4 w-full px-4'>
-                <Button variant="outline" className="cursor-pointer rounded-full h-12 px-8 font-manrope font-medium border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-all duration-300">
+                <ButtonWithIconDemo />
+                <Button variant="outline" className="text-[#1C4ED6] cursor-pointer rounded-full h-12 px-8 font-manrope font-medium border-[#1C4ED6] hover:bg-[#1C4ED6] hover:text-white transition-all duration-300">
                   Learn More
                 </Button>
-                <ButtonWithIconDemo />
               </div>
             </div>
           }
@@ -77,9 +104,9 @@ const Hero = () => {
         </ContainerScroll>
       </div>
 
-      <section className="relative z-10 w-full flex flex-col items-center justify-center -mt-15">
-        <h2 className="mb-3 text-center font-light text-neutral-500 text-base tracking-tight md:text-base font-manrope">
-          <span className="font-semibold">Helping users land roles at top companies</span>
+      <section className="relative z-10 w-full flex flex-col items-center justify-center mt-40">
+        <h2 className="mb-3 text-center text-neutral-500 text-base tracking-tight md:text-base font-manrope">
+          <span className="font-medium">Helping users land roles at top companies</span>
         </h2>
 
         <LogoCloud />

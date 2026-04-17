@@ -31,9 +31,6 @@ export default function Home() {
       <footer className="relative z-10 bg-neutral-100 rounded-t-[60px]">
         <Footer />
       </footer>
-
-
-
     </div>
   );
 }

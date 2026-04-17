@@ -22,20 +22,24 @@ export function FAQs() {
                     <h2 className="text-3xl font-medium tracking-tight text-gray-900 font-manrope">
                         Everything You Need to Know
                     </h2>
-                    <p className="text-gray-600 font-inter text-center max-w-2xl">
+                    <p className="text-gray-600 font-inter text-start max-w-2xl">
                         Clear answers about how it works, what to expect, and how you can get the most out of it.
                     </p>
 
                     <Button className="bg-[#1C4ED6] text-white font-manrope rounded-3xl cursor-pointer py-5 mt-5">Contact Us</Button>
                 </div>
 
-                <Accordion className="rounded-[1.5rem] bg-white border border-gray-100 w-full md:w-3/5" collapsible type="single">
+                <Accordion className="w-full md:w-3/5 space-y-3" collapsible type="single">
                     {questions.map((item) => (
-                        <AccordionItem className="px-4" key={item.id} value={item.id}>
-                            <AccordionTrigger className="py-4 hover:no-underline focus-visible:underline focus-visible:ring-0 cursor-pointer font-manrope">
+                        <AccordionItem 
+                            className="bg-white rounded-[1.25rem] border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] px-5 sm:px-6" 
+                            key={item.id} 
+                            value={item.id}
+                        >
+                            <AccordionTrigger className="py-4 hover:no-underline focus-visible:underline focus-visible:ring-0 cursor-pointer text-left text-base font-medium text-[#111827] font-inter">
                                 {item.title}
                             </AccordionTrigger>
-                            <AccordionContent className="pb-4! text-muted-foreground font-inter">
+                            <AccordionContent className="pb-4 pt-0 text-gray-600 font-inter text-sm pr-8 leading-relaxed">
                                 {item.content}
                             </AccordionContent>
                         </AccordionItem>

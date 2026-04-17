@@ -4,7 +4,7 @@ import * as React from "react"
 import { Accordion as AccordionPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+import { PlusIcon, MinusIcon } from "lucide-react"
 
 function Accordion({
   className,
@@ -48,8 +48,10 @@ function AccordionTrigger({
         {...props}
       >
         {children}
-        <ChevronDownIcon data-slot="accordion-trigger-icon" className="pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden" />
-        <ChevronUpIcon data-slot="accordion-trigger-icon" className="pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline" />
+        <div data-slot="accordion-trigger-icon-container" className="pointer-events-none shrink-0 relative flex w-6 h-6 rounded-full bg-[#1C4ED6] items-center justify-center ml-auto overflow-hidden">
+          <PlusIcon className="w-4 h-4 text-white absolute transition-all duration-300 ease-in-out group-aria-expanded/accordion-trigger:rotate-90 group-aria-expanded/accordion-trigger:opacity-0" />
+          <MinusIcon className="w-4 h-4 text-white absolute transition-all duration-300 ease-in-out -rotate-90 opacity-0 group-aria-expanded/accordion-trigger:rotate-0 group-aria-expanded/accordion-trigger:opacity-100" />
+        </div>
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   )
