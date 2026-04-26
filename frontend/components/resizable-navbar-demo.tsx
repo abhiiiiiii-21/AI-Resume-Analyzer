@@ -73,8 +73,8 @@ export default function NavbarDemo() {
         <NavBody>
           <NavbarLogo />
           <NavItems items={navItems} />
-          <div className="flex flex-1 items-center justify-end">
-            <NavbarButton variant="secondary">Login</NavbarButton>
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <NavbarButton variant="secondary" className="rounded-full">Login</NavbarButton>
             <NavbarButton variant="primary" className="rounded-full">Get Started</NavbarButton>
           </div>
         </NavBody>

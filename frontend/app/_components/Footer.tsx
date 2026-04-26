@@ -11,11 +11,11 @@ const Footer = () => {
         
         {/* Video Mask Header */}
         <div className="relative h-[250px] sm:h-[350px] md:h-[450px] lg:h-[500px] w-full">
-          <VideoText src="/CTA/blue.mp4" maskSrc="/Logo/Black.png"/>
+          <VideoText src="/Footer/blue.mp4" maskSrc="/Logo/Black.png"/>
         </div>
 
 
-        <div className="px-8 md:px-16 lg:px-24 pb-10 text-gray-800 flex flex-col gap-20">
+        <div className="w-full max-w-8xl mx-auto px-8 md:px-16 lg:px-8 pb-10 text-gray-800 flex flex-col gap-20">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-16 text-sm font-inter">
 
 
@@ -57,7 +57,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-between pt-4 text-xs font-inter text-gray-500">
+          <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-gray-200 text-xs font-inter text-gray-500">
             <p>© {new Date().getFullYear()} Resumind. All rights reserved.</p>
             <div className="flex items-center gap-6 mt-6 md:mt-0">
                <Link002 href="/privacy">LinkedIn</Link002>

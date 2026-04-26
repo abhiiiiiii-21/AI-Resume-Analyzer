@@ -19,7 +19,7 @@ const CTA = () => {
     <section ref={containerRef} className="relative -mt-20 h-[860px] overflow-hidden">
       <motion.div style={{ y }} className="absolute inset-x-0 -inset-y-[20%] w-full h-[140%]">
         <Image
-          src="/CTA/3.jpg"
+          src="/CTA/1.jpg"
           alt="CTA image"
           width={1920}
           height={1200}

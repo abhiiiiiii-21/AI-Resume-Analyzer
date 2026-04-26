@@ -79,7 +79,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
     <div
       className={cn(
-        "relative mx-auto hidden w-full max-w-[1100px] flex-row items-center justify-between gap-6 self-start rounded-full bg-[#1A1A1A]/90 backdrop-blur-xl border border-white/10 px-4 py-2.5 lg:flex shadow-2xl",
+        "relative mx-auto hidden w-full max-w-[1100px] flex-row items-center justify-between gap-6 self-start rounded-full bg-[rgba(20,20,20,0.75)] backdrop-blur-[12px] border border-[rgba(255,255,255,0.08)] px-4 py-2 lg:flex shadow-2xl transition-all duration-300",
         className,
       )}
     >
@@ -95,7 +95,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "hidden flex-1 flex-row items-center justify-center space-x-1 text-[15px] font-medium text-white/80 lg:flex lg:space-x-4",
+        "hidden flex-1 flex-row items-center justify-center space-x-1 text-[14px] font-medium text-white/80 lg:flex lg:space-x-4",
         className,
       )}
     >
@@ -108,13 +108,13 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
           {hovered === idx && (
             <motion.div
               layoutId="hovered"
-              className="absolute inset-0 h-full w-full rounded-full bg-white/10"
+              className="absolute inset-0 h-full w-full rounded-full bg-[rgba(255,255,255,0.08)]"
             />
           )}
           <a
             href={item.link}
             onClick={onItemClick}
-            className="relative px-3 py-2 z-20 whitespace-nowrap text-white/80 transition-colors hover:text-white"
+            className="relative px-3 py-2 z-20 whitespace-nowrap text-white/80 transition-all duration-200 hover:text-white hover:opacity-100"
           >
             {item.name}
           </a>
@@ -128,22 +128,22 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                 transition={{ duration: 0.2 }}
                 className="absolute top-full pt-4 z-50 left-1/2 -translate-x-1/2"
               >
-                <div className="bg-[#1A1A1A] rounded-2xl border border-white/10 p-3 w-[320px] shadow-2xl backdrop-blur-xl">
+                <div className="bg-white rounded-[20px] border border-[rgba(0,0,0,0.08)] p-3 w-[320px] shadow-2xl backdrop-blur-[12px]">
                   <ul className="grid w-full gap-1">
                     {item.children.map((childItem, childIdx) => (
                       <li key={childIdx} className="group list-none">
                         <a
                           href={childItem.href}
-                          className="flex gap-4 items-start rounded-xl p-3 hover:bg-white/10 transition-colors"
+                          className="flex gap-4 items-start rounded-xl p-3 hover:bg-black/5 transition-colors"
                         >
-                          <div className="border border-white/10 rounded-lg p-2.5 flex items-center justify-center bg-white/5 text-white">
+                          <div className="border border-neutral-200 rounded-lg p-2.5 flex items-center justify-center bg-neutral-100 text-neutral-700">
                             {childItem.icon}
                           </div>
                           <div className="text-left">
-                            <div className="text-sm font-medium leading-none text-white">
+                            <div className="text-sm font-medium leading-none text-neutral-900">
                               {childItem.title}
                             </div>
-                            <p className="text-white/60 line-clamp-2 pt-1.5 text-xs leading-snug">
+                            <p className="text-neutral-500 line-clamp-2 pt-1.5 text-xs leading-snug">
                               {childItem.description}
                             </p>
                           </div>
@@ -278,15 +278,15 @@ export const NavbarButton = ({
     | React.ComponentPropsWithoutRef<"button">
   )) => {
   const baseStyles =
-    "px-5 py-2.5 rounded-full text-sm font-semibold relative inline-flex items-center justify-center cursor-pointer transition-none inline-block text-center whitespace-nowrap border border-transparent";
+    "px-4 py-2 rounded-xl text-[14px] font-medium relative inline-flex items-center justify-center cursor-pointer transition-all duration-200 inline-block text-center whitespace-nowrap border border-transparent";
 
   const variantStyles = {
     primary:
-      "bg-[#1C4ED6] text-white",
-    secondary: "bg-transparent shadow-none text-white/80",
-    dark: "bg-black text-white",
+      "bg-blue-600/90 text-white hover:scale-[1.02] hover:brightness-105",
+    secondary: "bg-transparent shadow-none text-white/80 hover:text-white hover:bg-[rgba(255,255,255,0.05)]",
+    dark: "bg-black text-white hover:scale-[1.02]",
     gradient:
-      "bg-gradient-to-b from-blue-500 to-blue-700 text-white",
+      "bg-gradient-to-b from-blue-500/90 to-blue-600/90 text-white hover:scale-[1.02] hover:brightness-105",
   };
 
   return (
