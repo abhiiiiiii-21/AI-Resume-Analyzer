@@ -82,8 +82,8 @@ const Page = () => {
 
   const getFullPdfUrl = (url: string) => {
     if (!url) return "#";
-    // Map /uploads/xxx to http://localhost:5001/uploads/xxx
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5001";
+    // Map /uploads/xxx to http://localhost:5005/uploads/xxx
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5005";
     return `${baseUrl}${url}`;
   };
 

@@ -4,8 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 // ATS section
-import { TextProcessor } from './services/TextProcessor';
-import { ATSEngine } from './services/ATSEngine';
+import { ATSAnalyzer } from './services/ATSAnalyzerModule';
 import { ParserFactory } from './parsers/ParserFactory';
 import { ATSController } from './controllers/ATSController';
 import { ATSRouter } from './routes/ATSRouter';
@@ -18,10 +17,10 @@ import resumeRoutes from './routes/ResumeRoutes';
 dotenv.config();
 
 // Composition Root
-const textProcessor = new TextProcessor();
-const atsEngine = new ATSEngine(textProcessor);
+const apiKey = process.env.GROQ_API_KEY || '';
+const atsAnalyzer = new ATSAnalyzer(apiKey);
 const parserFactory = new ParserFactory();
-const atsController = new ATSController(atsEngine, parserFactory);
+const atsController = new ATSController(atsAnalyzer, parserFactory);
 const atsRouter = new ATSRouter(atsController);
 
 const app = express();

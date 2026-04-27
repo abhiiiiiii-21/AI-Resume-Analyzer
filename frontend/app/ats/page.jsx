@@ -204,7 +204,7 @@ function EmptyDashboard() {
         </div>
         <h3 className="text-xl font-bold text-[#F9FAFB] mb-3">Awaiting Analysis</h3>
         <p className="text-sm text-[#9CA3AF] leading-relaxed">
-          Upload your resume on the left and enter target job keywords to run a complete ATS compatibility scan.
+          Upload your resume on the left and enter a target job role or keywords to run a complete ATS compatibility scan.
         </p>
         <div className="mt-8 grid grid-cols-2 gap-4 text-left">
           {['Upload PDF or DOCX', 'Add job keywords', 'Run AI analysis', 'Get instant score'].map((t, i) => (
@@ -399,6 +399,15 @@ export default function ATSAnalyzerTool() {
   const [step, setStep]               = useState(1);
   const [resumeFile, setResumeFile]   = useState(null);
   const [jobSkills, setJobSkills]     = useState([]);
+  const [jobRole, setJobRole]         = useState('');
+  const [experience, setExperience]   = useState('');
+  const [filters, setFilters]         = useState({
+    remote: false,
+    urgent: false,
+    hybrid: false,
+    contract: false,
+    relocation: false
+  });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress]       = useState(0);
   const [error, setError]             = useState(null);
@@ -412,8 +421,10 @@ export default function ATSAnalyzerTool() {
   };
 
   const handleAnalyze = async () => {
-    if (!resumeFile)       return setError('Please upload a resume first.');
-    if (!jobSkills.length) return setError('Add at least one job keyword.');
+    if (!resumeFile) return setError('Please upload a resume first.');
+    if (!jobRole.trim() && !jobSkills.length) {
+      return setError('Please provide either a job role or at least one job keyword.');
+    }
     setError(null);
     setStep(3);
     setIsAnalyzing(true);
@@ -425,8 +436,12 @@ export default function ATSAnalyzerTool() {
     try {
       const fd = new FormData();
       fd.append('resumeFile', resumeFile);
+      fd.append('jobRole', jobRole);
+      fd.append('experience', experience);
       fd.append('jobSkills', jobSkills.join(', '));
-      const res = await fetch('http://localhost:5001/api/ats/calculate-file', { method: 'POST', body: fd });
+      fd.append('filters', JSON.stringify(filters));
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
+      const res = await fetch(`${baseUrl}/ats/calculate-file`, { method: 'POST', body: fd });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Analysis failed'); }
       const data = await res.json();
       clearInterval(timer);
@@ -442,10 +457,12 @@ export default function ATSAnalyzerTool() {
 
   const handleReset = () => {
     setResult(null); setResumeFile(null); setJobSkills([]);
+    setJobRole(''); setExperience('');
+    setFilters({ remote: false, urgent: false, hybrid: false, contract: false, relocation: false });
     setStep(1); setProgress(0); setError(null);
   };
 
-  const canAnalyze = !isAnalyzing && resumeFile && jobSkills.length > 0;
+  const canAnalyze = !isAnalyzing && resumeFile && (jobRole.trim() !== '' || jobSkills.length > 0);
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#020617] text-[#F9FAFB] font-sans relative overflow-hidden">
@@ -489,18 +506,76 @@ export default function ATSAnalyzerTool() {
               <DropZone file={resumeFile} onFile={handleFile} disabled={isAnalyzing} />
             </div>
 
-            {/* Keywords */}
-            <div className={cls('space-y-4 transition-all duration-500', step >= 2 ? 'opacity-100' : 'opacity-30 pointer-events-none')}>
+            {/* Job Context */}
+            <div className={cls('space-y-6 transition-all duration-500', step >= 2 ? 'opacity-100' : 'opacity-30 pointer-events-none')}>
+              
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-[0.2em] flex items-center gap-2">
                   <span className="w-5 h-5 rounded-lg bg-[#111827] border border-white/5 text-[#F9FAFB]/70 flex items-center justify-center text-[9px] shadow-sm">2</span>
                   Job Context
                 </label>
-                {jobSkills.length > 0 && (
-                  <span className="text-[10px] font-bold text-[#3B82F6] bg-[#3B82F6]/10 px-2.5 py-1 rounded-lg border border-[#3B82F6]/20">{jobSkills.length} selected</span>
-                )}
               </div>
-              <ChipInput chips={jobSkills} setChips={setJobSkills} disabled={isAnalyzing} />
+
+              {/* Job Role Input */}
+              <div className="space-y-2">
+                <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest px-1">Job Role</p>
+                <input
+                  type="text"
+                  value={jobRole}
+                  onChange={(e) => setJobRole(e.target.value)}
+                  placeholder="e.g. Senior Frontend Engineer"
+                  className="w-full bg-[#111827]/40 border border-white/5 rounded-[12px] p-3 text-sm text-[#F9FAFB] placeholder:text-[#9CA3AF]/30 focus:outline-none focus:border-[#3B82F6]/50 transition-all"
+                />
+              </div>
+
+              {/* Experience & Keywords Row */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest px-1">Experience Level</p>
+                  <select
+                    value={experience}
+                    onChange={(e) => setExperience(e.target.value)}
+                    className="w-full bg-[#111827]/40 border border-white/5 rounded-[12px] p-3 text-sm text-[#F9FAFB] focus:outline-none focus:border-[#3B82F6]/50 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="" className="bg-[#020617]">Select Experience</option>
+                    <option value="intern" className="bg-[#020617]">Internship / Student</option>
+                    <option value="entry" className="bg-[#020617]">Entry Level (0-2 years)</option>
+                    <option value="mid" className="bg-[#020617]">Mid Level (3-5 years)</option>
+                    <option value="senior" className="bg-[#020617]">Senior (5-8 years)</option>
+                    <option value="lead" className="bg-[#020617]">Lead / Architect (8+ years)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest">Required Skills</p>
+                    {jobSkills.length > 0 && <span className="text-[9px] font-bold text-[#3B82F6]">{jobSkills.length} selected</span>}
+                  </div>
+                  <ChipInput chips={jobSkills} setChips={setJobSkills} disabled={isAnalyzing} />
+                </div>
+              </div>
+
+              {/* Filters */}
+              <div className="space-y-3 pt-2">
+                <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest px-1">Work Preferences</p>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(filters).map(([key, active]) => (
+                    <button
+                      key={key}
+                      onClick={() => setFilters(prev => ({ ...prev, [key]: !prev[key] }))}
+                      className={cls(
+                        'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all duration-300',
+                        active 
+                          ? 'bg-[#3B82F6]/10 border-[#3B82F6]/40 text-[#3B82F6] shadow-[0_0_10px_rgba(59,130,246,0.1)]' 
+                          : 'bg-[#111827]/40 border-white/5 text-[#9CA3AF] hover:border-white/10'
+                      )}
+                    >
+                      {key}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
             </div>
 
             {/* Error */}
