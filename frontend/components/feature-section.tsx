@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import type React from "react";
-import { CobeGlobe } from "@/components/cobe-globe";
 import { TrendingUpIcon, SquareMousePointerIcon, GlobeIcon } from "lucide-react";
 
 const features = [
@@ -194,9 +193,6 @@ function PresenceVisual() {
 						Export your resume as PDF and access it anytime, anywhere.
 					</FeatureDescription>
 				</div>
-			</div>
-			<div className="relative">
-				<CobeGlobe className="-top-[12%] right-0 sm:absolute" />
 			</div>
 		</div>
 	);
