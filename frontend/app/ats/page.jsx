@@ -13,7 +13,7 @@ function cls(...args) { return args.filter(Boolean).join(' '); }
 
 /* ── Card ── */
 const Card = ({ children, className }) => (
-  <div className={cls('bg-[#111827]/80 backdrop-blur-[12px] border border-white/5 rounded-[16px] shadow-lg hover:shadow-xl transition-all duration-300', className)}>
+  <div className={cls('bg-white border border-neutral-200 rounded-[20px] shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden', className)}>
     {children}
   </div>
 );
@@ -24,9 +24,9 @@ const STEPS = ['Upload', 'Keywords', 'Analyze', 'Results'];
 function StepBar({ step }) {
   return (
     <div className="relative flex items-center justify-between mb-10 px-1">
-      <div className="absolute top-3 left-0 right-0 h-px bg-white/5" />
+      <div className="absolute top-3 left-0 right-0 h-px bg-neutral-100" />
       <div
-        className="absolute top-3 left-0 h-px bg-gradient-to-r from-[#3B82F6] to-[#6366F1] transition-all duration-500"
+        className="absolute top-3 left-0 h-px bg-[#1C4ED6] transition-all duration-500"
         style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
       />
       {STEPS.map((label, i) => {
@@ -35,16 +35,16 @@ function StepBar({ step }) {
         return (
           <div key={label} className="flex flex-col items-center z-10">
             <div className={cls(
-              'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all duration-300',
-              done    ? 'bg-[#3B82F6] border-[#3B82F6] text-[#F9FAFB] shadow-[0_0_10px_rgba(59,130,246,0.3)]' :
-              active  ? 'bg-[#0B0F19] border-[#6366F1] text-[#6366F1] shadow-[0_0_15px_rgba(99,102,241,0.2)]' :
-                        'bg-[#0B0F19] border-white/5 text-[#9CA3AF]'
+              'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all duration-300 font-manrope',
+              done    ? 'bg-[#1C4ED6] border-[#1C4ED6] text-white' :
+              active  ? 'bg-white border-[#1C4ED6] text-[#1C4ED6] shadow-[0_0_10px_rgba(28,78,214,0.2)]' :
+                        'bg-white border-neutral-200 text-neutral-400'
             )}>
               {done ? <CheckCircle2 size={12} /> : i + 1}
             </div>
             <span className={cls(
-              'text-[9px] font-bold uppercase tracking-widest mt-2 transition-colors',
-              active || done ? 'text-[#F9FAFB]' : 'text-[#9CA3AF]'
+              'text-[9px] font-bold uppercase tracking-widest mt-2 transition-colors font-manrope',
+              active || done ? 'text-neutral-900' : 'text-neutral-600'
             )}>{label}</span>
           </div>
         );
@@ -74,34 +74,34 @@ function DropZone({ file, onFile, disabled }) {
       onDrop={(e) => { e.preventDefault(); setDragging(false); accept(e.dataTransfer.files[0]); }}
       onClick={() => !disabled && !file && ref.current?.click()}
       className={cls(
-        'relative flex flex-col items-center justify-center rounded-[16px] border border-dashed transition-all duration-300 overflow-hidden',
+        'relative flex flex-col items-center justify-center rounded-[20px] border border-dashed transition-all duration-300 overflow-hidden',
         disabled ? 'opacity-40 pointer-events-none' : 'cursor-pointer',
-        dragging  ? 'border-[#3B82F6] bg-[#3B82F6]/5 scale-[1.03]' :
-        file      ? 'border-[#6366F1]/50 bg-[#6366F1]/5 h-24' :
-                    'border-white/10 bg-[#111827]/40 hover:border-[#6366F1]/40 hover:bg-[#111827]/60 h-44'
+        dragging  ? 'border-[#1C4ED6] bg-[#1C4ED6]/5 scale-[1.01]' :
+        file      ? 'border-[#1C4ED6]/40 bg-blue-50/30 h-24' :
+                    'border-neutral-200 bg-white hover:border-[#1C4ED6]/40 hover:bg-neutral-50 h-44 shadow-sm'
       )}
     >
       {file ? (
         <div className="flex items-center gap-4 w-full px-5">
-          <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center shrink-0">
-            <FileText size={18} className="text-[#6366F1]" />
+          <div className="w-10 h-10 rounded-xl bg-[#1C4ED6]/5 border border-[#1C4ED6]/10 flex items-center justify-center shrink-0">
+            <FileText size={18} className="text-[#1C4ED6]" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-[#F9FAFB] truncate">{file.name}</p>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">{(file.size / 1024).toFixed(0)} KB · Ready</p>
+            <p className="text-sm font-bold text-neutral-900 truncate font-manrope">{file.name}</p>
+            <p className="text-xs text-neutral-600 mt-0.5 font-medium">{(file.size / 1024).toFixed(0)} KB · Ready</p>
           </div>
           <button type="button" onClick={(e) => { e.stopPropagation(); onFile(null); }}
-            className="p-1.5 text-[#9CA3AF] hover:text-[#EF4444] transition-colors rounded-lg hover:bg-white/5">
+            className="p-1.5 text-neutral-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50">
             <X size={14} />
           </button>
         </div>
       ) : (
         <div className="text-center px-6 group">
-          <div className="w-12 h-12 rounded-[16px] bg-[#111827]/80 border border-white/5 mx-auto mb-3 flex items-center justify-center transition-all group-hover:bg-[#3B82F6]/10 group-hover:scale-[1.05] group-hover:border-[#3B82F6]/20 shadow-lg">
-            <UploadCloud size={22} className="text-[#9CA3AF] group-hover:text-[#3B82F6] transition-colors" />
+          <div className="w-12 h-12 rounded-[16px] bg-neutral-50 border border-neutral-100 mx-auto mb-3 flex items-center justify-center transition-all group-hover:bg-[#1C4ED6]/5 group-hover:scale-[1.05] group-hover:border-[#1C4ED6]/20 shadow-sm">
+            <UploadCloud size={22} className="text-neutral-500 group-hover:text-[#1C4ED6] transition-colors" />
           </div>
-          <p className="text-sm font-semibold text-[#9CA3AF]">Drop file or <span className="text-[#3B82F6] underline underline-offset-4 decoration-[#3B82F6]/30">browse</span></p>
-          <p className="text-xs text-[#9CA3AF]/60 mt-1">PDF · DOCX · Max 5 MB</p>
+          <p className="text-sm font-semibold text-neutral-800 font-manrope">Drop file or <span className="text-[#1C4ED6] underline underline-offset-4 decoration-[#1C4ED6]/30">browse</span></p>
+          <p className="text-xs text-neutral-500 mt-1 font-medium">PDF · DOCX · Max 5 MB</p>
         </div>
       )}
       <input ref={ref} type="file" className="hidden" accept=".pdf,.doc,.docx"
@@ -129,15 +129,15 @@ function ChipInput({ chips, setChips, disabled }) {
 
   return (
     <div className={cls(
-      'bg-[#111827]/40 border rounded-[16px] p-4 transition-all focus-within:border-[#3B82F6]/50 focus-within:ring-1 focus-within:ring-[#3B82F6]/20 shadow-inner',
-      disabled ? 'border-white/5 opacity-40 pointer-events-none' : 'border-white/5 hover:border-white/10'
+      'bg-white border rounded-[16px] p-4 transition-all focus-within:border-[#1C4ED6]/40 focus-within:ring-4 focus-within:ring-[#1C4ED6]/5 shadow-sm',
+      disabled ? 'border-neutral-100 opacity-40 pointer-events-none' : 'border-neutral-200 hover:border-neutral-300'
     )}>
       <div className="flex flex-wrap gap-2 mb-3 min-h-[28px]">
         {chips.map((c) => (
-          <span key={c} className="flex items-center gap-1.5 px-3 py-1 bg-[#3B82F6]/10 border border-[#3B82F6]/20 text-[#3B82F6] rounded-lg text-xs font-semibold tracking-wide">
+          <span key={c} className="flex items-center gap-1.5 px-3 py-1 bg-[#1C4ED6]/5 border border-[#1C4ED6]/10 text-[#1C4ED6] rounded-lg text-xs font-semibold tracking-wide font-manrope">
             {c}
             <button type="button" onClick={() => setChips(chips.filter((x) => x !== c))}>
-              <X size={12} className="hover:text-[#F9FAFB] transition-colors" />
+              <X size={12} className="hover:text-red-500 transition-colors" />
             </button>
           </span>
         ))}
@@ -146,17 +146,17 @@ function ChipInput({ chips, setChips, disabled }) {
           onChange={(e) => setVal(e.target.value)}
           onKeyDown={onKey}
           placeholder={chips.length === 0 ? 'Type keyword → Enter...' : 'Add more...'}
-          className="flex-1 min-w-[120px] bg-transparent text-sm text-[#F9FAFB] placeholder:text-[#9CA3AF]/50 focus:outline-none py-0.5"
+          className="flex-1 min-w-[120px] bg-transparent text-sm text-neutral-900 placeholder:text-neutral-300 focus:outline-none py-0.5"
         />
       </div>
 
       {chips.length === 0 && (
-        <div className="pt-4 border-t border-white/5">
-          <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest mb-3">Suggestions</p>
+        <div className="pt-4 border-t border-neutral-100">
+          <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-3 font-manrope">Suggestions</p>
           <div className="flex flex-wrap gap-2">
             {SUGGESTIONS.map((s) => (
               <button key={s} type="button" onClick={() => add(s)}
-                className="text-[10px] px-2.5 py-1 bg-white/5 text-[#9CA3AF] border border-white/5 rounded-lg hover:bg-[#3B82F6]/10 hover:text-[#3B82F6] hover:border-[#3B82F6]/20 transition-all font-medium">
+                className="text-[10px] px-2.5 py-1 bg-neutral-50 text-neutral-700 border border-neutral-200 rounded-lg hover:bg-[#1C4ED6]/5 hover:text-[#1C4ED6] hover:border-[#1C4ED6]/20 transition-all font-bold font-manrope">
                 + {s}
               </button>
             ))}
@@ -170,24 +170,24 @@ function ChipInput({ chips, setChips, disabled }) {
 /* ── Scanning animation ── */
 function ScanningView({ progress }) {
   return (
-    <div className="h-full flex flex-col items-center justify-center px-10 py-20 relative z-10">
-      <div className="relative w-full max-w-sm h-72 rounded-[16px] bg-[#111827]/80 backdrop-blur-[12px] border border-white/5 overflow-hidden flex items-center justify-center shadow-2xl mb-10">
-        <FileText size={88} className="text-white/5" />
-        <div className="absolute left-4 right-4 h-[2px] bg-gradient-to-r from-transparent via-[#6366F1] to-transparent shadow-[0_0_15px_#3B82F6] animate-[scan_1.8s_ease-in-out_infinite]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#3B82F6]/5 via-transparent to-transparent animate-pulse pointer-events-none" />
+    <div className="h-full flex flex-col items-center justify-center px-10 py-20 relative z-10 bg-white/40 backdrop-blur-sm">
+      <div className="relative w-full max-w-sm h-72 rounded-[24px] bg-white border border-neutral-200 overflow-hidden flex items-center justify-center shadow-2xl mb-10">
+        <FileText size={88} className="text-neutral-100" />
+        <div className="absolute left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-[#1C4ED6] to-transparent shadow-[0_0_20px_rgba(28,78,214,0.5)] animate-[scan_2s_ease-in-out_infinite]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1C4ED6]/5 via-transparent to-transparent animate-pulse pointer-events-none" />
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes scan {
-            0%   { top: 5%;  opacity: 0; }
-            5%   { opacity: 1; }
-            95%  { opacity: 1; }
-            100% { top: 95%; opacity: 0; }
+            0%   { top: 10%;  opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { top: 90%; opacity: 0; }
           }
         ` }} />
       </div>
-      <p className="text-lg font-black text-[#F9FAFB] mb-2 animate-pulse">Running AI Analysis Engine</p>
-      <p className="text-sm text-[#3B82F6] font-mono tracking-widest mb-6 font-bold">SCORING RESUME · {progress}%</p>
-      <div className="w-64 h-1.5 bg-[#111827] border border-white/5 shadow-inner rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-[#3B82F6] to-[#6366F1] rounded-full transition-all duration-300"
+      <p className="text-xl font-bold text-neutral-900 mb-2 font-manrope">Analyzing Your Resume</p>
+      <p className="text-sm text-[#1C4ED6] font-bold tracking-widest mb-6 font-manrope uppercase">SCORING · {progress}%</p>
+      <div className="w-64 h-2 bg-neutral-100 rounded-full overflow-hidden border border-neutral-200 shadow-inner">
+        <div className="h-full bg-[#1C4ED6] rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }} />
       </div>
     </div>
@@ -197,19 +197,19 @@ function ScanningView({ progress }) {
 /* ── Empty state ── */
 function EmptyDashboard() {
   return (
-    <div className="h-full flex items-center justify-center p-10 relative z-10">
+    <div className="h-full flex items-center justify-center p-10 relative z-10 bg-white/40 backdrop-blur-sm">
       <div className="text-center max-w-sm">
-        <div className="w-20 h-20 rounded-[16px] bg-[#111827]/60 border border-white/5 flex items-center justify-center mx-auto mb-6 shadow-lg backdrop-blur-md">
-          <BarChart3 size={32} className="text-[#9CA3AF]/60" />
+        <div className="w-20 h-20 rounded-[24px] bg-white border border-neutral-200 flex items-center justify-center mx-auto mb-8 shadow-xl">
+          <BarChart3 size={32} className="text-neutral-400" />
         </div>
-        <h3 className="text-xl font-bold text-[#F9FAFB] mb-3">Awaiting Analysis</h3>
-        <p className="text-sm text-[#9CA3AF] leading-relaxed">
+        <h3 className="text-2xl font-bold text-neutral-900 mb-3 font-manrope">Awaiting Analysis</h3>
+        <p className="text-sm text-neutral-700 leading-relaxed font-medium">
           Upload your resume on the left and enter a target job role or keywords to run a complete ATS compatibility scan.
         </p>
-        <div className="mt-8 grid grid-cols-2 gap-4 text-left">
+        <div className="mt-10 grid grid-cols-2 gap-4 text-left">
           {['Upload PDF or DOCX', 'Add job keywords', 'Run AI analysis', 'Get instant score'].map((t, i) => (
-            <div key={t} className="flex items-center gap-3 text-xs text-[#9CA3AF] font-medium">
-              <span className="w-5 h-5 rounded-lg bg-[#111827] border border-white/5 text-[9px] flex items-center justify-center font-bold text-[#F9FAFB]/70 shadow-inner">{i + 1}</span>
+            <div key={t} className="flex items-center gap-3 text-xs text-neutral-800 font-bold font-manrope">
+              <span className="w-6 h-6 rounded-lg bg-neutral-100 border border-neutral-200 text-neutral-500 flex items-center justify-center text-[10px] font-bold shadow-sm">{i + 1}</span>
               {t}
             </div>
           ))}
@@ -229,30 +229,30 @@ function ResultDashboard({ result, file, onReset }) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#22C55E] bg-[rgba(34,197,94,0.1)] px-3 py-1 rounded-full border border-[#22C55E]/20 mb-4 shadow-sm">
+          <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100 mb-4 shadow-sm font-manrope">
             <CheckCircle2 size={11} /> Analysis Complete
           </div>
-          <h1 className="text-3xl font-black text-[#F9FAFB] tracking-tight">ATS Score Report</h1>
-          <p className="text-xs text-[#9CA3AF] mt-2 font-medium">
-            Analyzed just now &nbsp;·&nbsp; <span className="text-[#F9FAFB]/70">{file?.name}</span> &nbsp;·&nbsp; {(file?.size / 1024).toFixed(0)} KB
+          <h1 className="text-4xl font-bold text-neutral-900 tracking-tight font-manrope">ATS Score Report</h1>
+          <p className="text-xs text-neutral-700 mt-2 font-bold uppercase tracking-wider">
+            Analyzed just now &nbsp;·&nbsp; <span className="text-neutral-900 font-black tracking-normal lowercase">{file?.name}</span> &nbsp;·&nbsp; {(file?.size / 1024).toFixed(0)} KB
           </p>
         </div>
         <button onClick={onReset}
-          className="flex items-center gap-2 text-xs font-bold text-[#9CA3AF] hover:text-[#F9FAFB] bg-[#111827]/80 hover:bg-[#111827] border border-white/5 px-4 py-2.5 rounded-[12px] transition-all shadow-md backdrop-blur-md">
+          className="flex items-center gap-2 text-xs font-bold text-neutral-700 hover:text-neutral-900 bg-white hover:bg-neutral-50 border border-neutral-300 px-5 py-3 rounded-full transition-all shadow-sm font-manrope">
           <RefreshCw size={13} /> New Scan
         </button>
       </div>
 
       {/* Score + Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <Card className="md:col-span-4 p-8 flex flex-col items-center justify-center text-center relative hover:-translate-y-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#3B82F6]/5 to-transparent pointer-events-none rounded-[16px]" />
+        <Card className="md:col-span-4 p-8 flex flex-col items-center justify-center text-center relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1C4ED6]/5 to-transparent pointer-events-none" />
           <CircularScore score={score} />
           <div className={cls(
-            'mt-6 px-5 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest shadow-sm',
+            'mt-6 px-5 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest shadow-sm font-manrope',
             atsCompatible
-              ? 'bg-[rgba(34,197,94,0.1)] border-[#22C55E]/20 text-[#22C55E]'
-              : 'bg-[rgba(239,68,68,0.1)] border-[#EF4444]/20 text-[#EF4444]'
+              ? 'bg-green-50 border-green-100 text-green-600'
+              : 'bg-red-50 border-red-100 text-red-600'
           )}>
             {atsCompatible ? 'ATS Compatible ✓' : 'Needs Improvement'}
           </div>
@@ -260,28 +260,27 @@ function ResultDashboard({ result, file, onReset }) {
 
         <div className="md:col-span-8 space-y-6">
           <Card className="p-6 flex items-start gap-5 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#3B82F6]/10 to-[#6366F1]/10 pointer-events-none transition-opacity group-hover:opacity-80" />
-            <div className="absolute -left-px top-0 bottom-0 w-1 bg-gradient-to-b from-[#3B82F6] to-[#6366F1] shadow-[0_0_10px_#6366F1]" />
-            <div className="shrink-0 w-12 h-12 rounded-[14px] bg-[#0B0F19] border border-[#6366F1]/30 flex items-center justify-center shadow-inner relative z-10">
-              <Sparkles size={20} className="text-[#6366F1]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1C4ED6]/5 to-blue-400/5 pointer-events-none" />
+            <div className="absolute -left-px top-0 bottom-0 w-1 bg-[#1C4ED6] shadow-[0_0_10px_rgba(28,78,214,0.3)]" />
+            <div className="shrink-0 w-12 h-12 rounded-[16px] bg-white border border-neutral-100 flex items-center justify-center shadow-sm relative z-10">
+              <Sparkles size={20} className="text-[#1C4ED6]" />
             </div>
             <div className="relative z-10">
-              <p className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest mb-2">AI Intelligence Summary</p>
-              <p className="text-sm text-[#F9FAFB]/90 leading-relaxed font-medium">{aiSummary}</p>
+              <p className="text-[10px] font-bold text-[#1C4ED6] uppercase tracking-widest mb-2 font-manrope">AI Intelligence Summary</p>
+              <p className="text-sm text-neutral-800 leading-relaxed font-medium">{aiSummary}</p>
             </div>
           </Card>
 
           <div className="grid grid-cols-3 gap-6">
             {[
-              { label: 'Matched', value: matchedSkills.length, sub: 'found', color: 'text-[#22C55E]' },
-              { label: 'Missing', value: missingSkills.length, sub: 'absent', color: 'text-[#EF4444]' },
-              { label: 'Actions', value: suggestions.length, sub: 'tips', color: 'text-[#3B82F6]' },
-            ].map(({ label, value, sub, color }) => (
-              <Card key={label} className="p-5 text-center relative hover:-translate-y-1 hover:border-white/10">
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none rounded-[16px]" />
-                <div className={cls("text-4xl font-black drop-shadow-md mb-1", color)}>{value}</div>
-                <div className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">{label}</div>
-                <div className="text-[9px] text-[#9CA3AF]/50 mt-1">{sub}</div>
+              { label: 'Matched', value: matchedSkills.length, sub: 'found', color: 'text-green-600', bg: 'bg-green-50' },
+              { label: 'Missing', value: missingSkills.length, sub: 'absent', color: 'text-red-600', bg: 'bg-red-50' },
+              { label: 'Actions', value: suggestions.length, sub: 'tips', color: 'text-[#1C4ED6]', bg: 'bg-blue-50' },
+            ].map(({ label, value, sub, color, bg }) => (
+              <Card key={label} className="p-5 text-center group">
+                <div className={cls("text-4xl font-bold mb-1 font-manrope", color)}>{value}</div>
+                <div className="text-[10px] font-bold text-neutral-700 uppercase tracking-wider font-manrope">{label}</div>
+                <div className="text-[9px] text-neutral-600 font-bold mt-1 uppercase tracking-tighter">{sub}</div>
               </Card>
             ))}
           </div>
@@ -292,19 +291,19 @@ function ResultDashboard({ result, file, onReset }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-7">
           <div className="flex items-center gap-3 mb-7">
-            <div className="p-2 bg-[#0B0F19] rounded-lg border border-white/5">
-              <Target size={16} className="text-[#6366F1]" />
+            <div className="p-2 bg-neutral-50 rounded-lg border border-neutral-100">
+              <Target size={16} className="text-[#1C4ED6]" />
             </div>
-            <h3 className="text-sm font-bold text-[#F9FAFB]">Section Breakdown</h3>
+            <h3 className="text-sm font-bold text-neutral-900 font-manrope">Section Breakdown</h3>
           </div>
           <SectionScores scores={sectionScores} />
         </Card>
         <Card className="p-7">
           <div className="flex items-center gap-3 mb-7">
-            <div className="p-2 bg-[#0B0F19] rounded-lg border border-white/5">
-              <TrendingUp size={16} className="text-[#3B82F6]" />
+            <div className="p-2 bg-neutral-50 rounded-lg border border-neutral-100">
+              <TrendingUp size={16} className="text-blue-400" />
             </div>
-            <h3 className="text-sm font-bold text-[#F9FAFB]">Keyword Density</h3>
+            <h3 className="text-sm font-bold text-neutral-900 font-manrope">Keyword Density</h3>
           </div>
           <KeywordDensity keywordDensity={keywordDensity} />
         </Card>
@@ -315,19 +314,19 @@ function ResultDashboard({ result, file, onReset }) {
         <Card className="p-7">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#0B0F19] rounded-lg border border-[#22C55E]/20">
-                <CheckCircle2 size={16} className="text-[#22C55E]" />
+              <div className="p-2 bg-green-50 rounded-lg border border-green-100">
+                <CheckCircle2 size={16} className="text-green-600" />
               </div>
-              <h3 className="text-sm font-bold text-[#F9FAFB]">Found Keywords</h3>
+              <h3 className="text-sm font-bold text-neutral-900 font-manrope">Found Keywords</h3>
             </div>
-            <span className="text-[10px] font-bold bg-[#0B0F19] text-[#9CA3AF] px-2.5 py-1 rounded-lg border border-white/5">{matchedSkills.length}</span>
+            <span className="text-[10px] font-bold bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-lg border border-neutral-200 font-manrope shadow-inner">{matchedSkills.length}</span>
           </div>
           <div className="flex flex-wrap gap-2.5">
             {matchedSkills.length > 0
               ? matchedSkills.map((s) => (
-                  <span key={s} className="px-3.5 py-1.5 bg-[rgba(34,197,94,0.1)] border border-[#22C55E]/20 text-[#22C55E] text-xs font-semibold rounded-[10px] capitalize shadow-sm tracking-wide">{s}</span>
+                  <span key={s} className="px-3.5 py-1.5 bg-green-50 border border-green-100 text-green-600 text-xs font-semibold rounded-[12px] capitalize shadow-sm tracking-wide font-manrope">{s}</span>
                 ))
-              : <p className="text-[#9CA3AF] text-sm italic">No exact matches found.</p>
+              : <p className="text-neutral-400 text-sm italic">No exact matches found.</p>
             }
           </div>
         </Card>
@@ -335,55 +334,55 @@ function ResultDashboard({ result, file, onReset }) {
         <Card className="p-7">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#0B0F19] rounded-lg border border-[#EF4444]/20">
-                <XCircle size={16} className="text-[#EF4444]" />
+              <div className="p-2 bg-red-50 rounded-lg border border-red-100">
+                <XCircle size={16} className="text-red-600" />
               </div>
-              <h3 className="text-sm font-bold text-[#F9FAFB]">Missing Keywords</h3>
+              <h3 className="text-sm font-bold text-neutral-900 font-manrope">Missing Keywords</h3>
             </div>
-            <span className="text-[10px] font-bold bg-[#0B0F19] text-[#9CA3AF] px-2.5 py-1 rounded-lg border border-white/5">{missingSkills.length}</span>
+            <span className="text-[10px] font-bold bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-lg border border-neutral-200 font-manrope shadow-inner">{missingSkills.length}</span>
           </div>
           <div className="flex flex-wrap gap-2.5">
             {missingSkills.length > 0
               ? missingSkills.map((s) => (
-                  <span key={s} className="px-3.5 py-1.5 bg-[rgba(239,68,68,0.1)] border border-[#EF4444]/20 text-[#EF4444] text-xs font-semibold rounded-[10px] capitalize shadow-sm tracking-wide">{s}</span>
+                  <span key={s} className="px-3.5 py-1.5 bg-red-50 border border-red-100 text-red-600 text-xs font-semibold rounded-[12px] capitalize shadow-sm tracking-wide font-manrope">{s}</span>
                 ))
-              : <p className="text-[#22C55E] text-sm font-semibold bg-[rgba(34,197,94,0.1)] px-3 py-1.5 rounded-lg inline-block">All keywords detected ✓</p>
+              : <p className="text-green-600 text-sm font-semibold bg-green-50 px-3 py-1.5 rounded-lg inline-block font-manrope">All keywords detected ✓</p>
             }
           </div>
         </Card>
       </div>
 
       {/* Suggestions */}
-      <Card className="p-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#6366F1]/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-10 h-10 rounded-[12px] bg-[#111827] border border-white/5 flex items-center justify-center shadow-inner relative z-10">
-            <Sparkles size={18} className="text-[#3B82F6]" />
+      <Card className="p-8 relative overflow-hidden border-none shadow-xl bg-gradient-to-br from-neutral-900 to-black text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#1C4ED6]/20 blur-[100px] pointer-events-none" />
+        <div className="flex items-center gap-4 mb-10">
+          <div className="w-10 h-10 rounded-[12px] bg-white/10 border border-white/10 flex items-center justify-center shadow-inner relative z-10">
+            <Sparkles size={18} className="text-blue-400" />
           </div>
-          <h3 className="text-lg font-black text-[#F9FAFB] tracking-wide relative z-10">AI Recommendations</h3>
-          <span className="text-[10px] font-bold bg-[#0B0F19] border border-white/5 text-[#3B82F6] px-3 py-1 rounded-lg ml-auto relative z-10 shadow-sm">{suggestions.length} actions</span>
+          <h3 className="text-2xl font-bold text-white tracking-wide relative z-10 font-manrope">AI Recommendations</h3>
+          <span className="text-[10px] font-bold bg-white/10 border border-white/10 text-blue-400 px-4 py-1.5 rounded-full ml-auto relative z-10 shadow-sm font-manrope uppercase tracking-widest">{suggestions.length} actions</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
           {suggestions.map((s, i) => (
-            <div key={i} className="flex items-start gap-4 bg-[#0B0F19]/50 border border-white/5 rounded-[14px] p-5 hover:bg-[#0B0F19] hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 shadow-sm">
-              <div className="mt-0.5 shrink-0 bg-white/5 p-1 rounded-md text-[#3B82F6]">
+            <div key={i} className="flex items-start gap-4 bg-white/5 border border-white/5 rounded-[18px] p-6 hover:bg-white/10 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 group">
+              <div className="mt-1 shrink-0 bg-blue-500/20 p-1.5 rounded-lg text-blue-400 group-hover:scale-110 transition-transform">
                 <ArrowRight size={14} />
               </div>
-              <p className="text-sm text-[#F9FAFB]/80 leading-relaxed font-medium">{s}</p>
+              <p className="text-sm text-neutral-100 leading-relaxed font-semibold">{s}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
-          <p className="text-xs text-[#9CA3AF] max-w-sm leading-relaxed">Apply these suggestions to significantly boost your resume's ATS compatibility and visibility to recruiters.</p>
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 relative z-10">
+          <p className="text-xs text-neutral-200 max-w-sm leading-relaxed font-medium">Apply these expert suggestions to significantly boost your resume's ATS compatibility and capture recruiter attention instantly.</p>
           <div className="flex w-full sm:w-auto gap-4">
             <button onClick={() => window.print()}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-[#9CA3AF] hover:text-[#F9FAFB] bg-[#111827] hover:bg-[#111827]/80 border border-white/5 px-5 py-3 rounded-[12px] transition-all shadow-md">
-              <Download size={15} /> Export
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-neutral-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-full transition-all font-manrope">
+              <Download size={15} /> Export Report
             </button>
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-[#3B82F6] to-[#6366F1] hover:scale-[1.03] px-6 py-3 rounded-[12px] transition-all shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] hover:shadow-[0_6px_20px_rgba(99,102,241,0.23)]">
-              Improve Resume <ArrowRight size={15} />
+            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white bg-[#1C4ED6] hover:bg-blue-700 px-8 py-3 rounded-full transition-all shadow-[0_8px_20px_rgba(28,78,214,0.4)] font-manrope">
+              Optimize Resume <ArrowRight size={15} />
             </button>
           </div>
         </div>
@@ -465,32 +464,38 @@ export default function ATSAnalyzerTool() {
   const canAnalyze = !isAnalyzing && resumeFile && (jobRole.trim() !== '' || jobSkills.length > 0);
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#020617] text-[#F9FAFB] font-sans relative overflow-hidden">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#FAFAFA] text-neutral-900 font-inter relative overflow-hidden transition-colors duration-500">
 
       {/* ── BACKGROUND ── */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div style={{ background: 'radial-gradient(circle at top, #111827 0%, #020617 100%)' }} className="absolute inset-0" />
+        {/* Base background color */}
+        <div className="absolute inset-0 bg-[#FAFAFA]" />
         
-        {/* Subtle Vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,6,23,0.4)_100%)]" />
-        
-        {/* Noise Texture */}
-        <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        {/* Dotted pattern with linear fade-out mask */}
+        <div
+          className="absolute inset-0 z-0 pointer-events-none opacity-40"
+          style={{
+            backgroundImage: "radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.15) 1px, transparent 0)",
+            backgroundSize: "24px 24px",
+            maskImage: "linear-gradient(to bottom, black 10%, transparent 60%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 10%, transparent 60%)",
+          }}
+        />
 
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#3B82F6]/5 blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#6366F1]/5 blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-[#1C4ED6]/5 blur-[100px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-blue-400/5 blur-[100px]" />
       </div>
 
       {/* ── LEFT SIDEBAR ── */}
-      <aside className="w-full lg:w-[420px] shrink-0 flex flex-col h-screen sticky top-0 bg-[#020617]/90 backdrop-blur-xl border-r border-white/5 z-20 shadow-2xl overflow-y-auto">
+      <aside className="w-full lg:w-[420px] shrink-0 flex flex-col h-screen sticky top-0 bg-white/80 backdrop-blur-xl border-r border-neutral-200 z-20 shadow-xl overflow-y-auto">
         <div className="flex flex-col flex-1 p-8 md:p-10">
 
           {/* Logo */}
-          <div className="flex items-center gap-4 mb-12">
-            <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#3B82F6] to-[#6366F1] flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-10 h-10 rounded-[12px] bg-[#1C4ED6] flex items-center justify-center shadow-[0_4px_14px_rgba(28,78,214,0.3)]">
               <Layers size={18} className="text-white" />
             </div>
-            <span className="font-black text-[#F9FAFB] text-xl tracking-tight">Resumind</span>
+            <span className="font-bold text-neutral-900 text-xl tracking-tight font-manrope">Resumind</span>
           </div>
 
           <StepBar step={step} />
@@ -499,8 +504,8 @@ export default function ATSAnalyzerTool() {
 
             {/* Upload */}
             <div className="space-y-4">
-              <label className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-[0.2em] flex items-center gap-2">
-                <span className="w-5 h-5 rounded-lg bg-[#111827] border border-white/5 text-[#F9FAFB]/70 flex items-center justify-center text-[9px] shadow-sm">1</span>
+              <label className="text-[10px] font-bold text-neutral-600 uppercase tracking-[0.2em] flex items-center gap-2 font-manrope">
+                <span className="w-5 h-5 rounded-lg bg-neutral-100 border border-neutral-200 text-neutral-700 flex items-center justify-center text-[9px] shadow-sm">1</span>
                 Upload Resume
               </label>
               <DropZone file={resumeFile} onFile={handleFile} disabled={isAnalyzing} />
@@ -510,46 +515,46 @@ export default function ATSAnalyzerTool() {
             <div className={cls('space-y-6 transition-all duration-500', step >= 2 ? 'opacity-100' : 'opacity-30 pointer-events-none')}>
               
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-[0.2em] flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-lg bg-[#111827] border border-white/5 text-[#F9FAFB]/70 flex items-center justify-center text-[9px] shadow-sm">2</span>
+                <label className="text-[10px] font-bold text-neutral-600 uppercase tracking-[0.2em] flex items-center gap-2 font-manrope">
+                  <span className="w-5 h-5 rounded-lg bg-neutral-100 border border-neutral-200 text-neutral-700 flex items-center justify-center text-[9px] shadow-sm">2</span>
                   Job Context
                 </label>
               </div>
 
               {/* Job Role Input */}
               <div className="space-y-2">
-                <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest px-1">Job Role</p>
+                <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest px-1 font-manrope">Job Role</p>
                 <input
                   type="text"
                   value={jobRole}
                   onChange={(e) => setJobRole(e.target.value)}
                   placeholder="e.g. Senior Frontend Engineer"
-                  className="w-full bg-[#111827]/40 border border-white/5 rounded-[12px] p-3 text-sm text-[#F9FAFB] placeholder:text-[#9CA3AF]/30 focus:outline-none focus:border-[#3B82F6]/50 transition-all"
+                  className="w-full bg-white border border-neutral-200 rounded-[12px] p-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#1C4ED6]/50 focus:ring-4 focus:ring-[#1C4ED6]/5 transition-all shadow-sm"
                 />
               </div>
 
               {/* Experience & Keywords Row */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest px-1">Experience Level</p>
+                  <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest px-1 font-manrope">Experience Level</p>
                   <select
                     value={experience}
                     onChange={(e) => setExperience(e.target.value)}
-                    className="w-full bg-[#111827]/40 border border-white/5 rounded-[12px] p-3 text-sm text-[#F9FAFB] focus:outline-none focus:border-[#3B82F6]/50 transition-all appearance-none cursor-pointer"
+                    className="w-full bg-white border border-neutral-200 rounded-[12px] p-3 text-sm text-neutral-900 focus:outline-none focus:border-[#1C4ED6]/50 focus:ring-4 focus:ring-[#1C4ED6]/5 transition-all appearance-none cursor-pointer shadow-sm font-medium"
                   >
-                    <option value="" className="bg-[#020617]">Select Experience</option>
-                    <option value="intern" className="bg-[#020617]">Internship / Student</option>
-                    <option value="entry" className="bg-[#020617]">Entry Level (0-2 years)</option>
-                    <option value="mid" className="bg-[#020617]">Mid Level (3-5 years)</option>
-                    <option value="senior" className="bg-[#020617]">Senior (5-8 years)</option>
-                    <option value="lead" className="bg-[#020617]">Lead / Architect (8+ years)</option>
+                    <option value="">Select Experience</option>
+                    <option value="intern">Internship / Student</option>
+                    <option value="entry">Entry Level (0-2 years)</option>
+                    <option value="mid">Mid Level (3-5 years)</option>
+                    <option value="senior">Senior (5-8 years)</option>
+                    <option value="lead">Lead / Architect (8+ years)</option>
                   </select>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
-                    <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest">Required Skills</p>
-                    {jobSkills.length > 0 && <span className="text-[9px] font-bold text-[#3B82F6]">{jobSkills.length} selected</span>}
+                    <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest font-manrope">Required Skills</p>
+                    {jobSkills.length > 0 && <span className="text-[9px] font-bold text-[#1C4ED6]">{jobSkills.length} selected</span>}
                   </div>
                   <ChipInput chips={jobSkills} setChips={setJobSkills} disabled={isAnalyzing} />
                 </div>
@@ -557,17 +562,17 @@ export default function ATSAnalyzerTool() {
 
               {/* Filters */}
               <div className="space-y-3 pt-2">
-                <p className="text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest px-1">Work Preferences</p>
+                <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest px-1 font-manrope">Work Preferences</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(filters).map(([key, active]) => (
                     <button
                       key={key}
                       onClick={() => setFilters(prev => ({ ...prev, [key]: !prev[key] }))}
                       className={cls(
-                        'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all duration-300',
+                        'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all duration-300 font-manrope',
                         active 
-                          ? 'bg-[#3B82F6]/10 border-[#3B82F6]/40 text-[#3B82F6] shadow-[0_0_10px_rgba(59,130,246,0.1)]' 
-                          : 'bg-[#111827]/40 border-white/5 text-[#9CA3AF] hover:border-white/10'
+                          ? 'bg-[#1C4ED6] border-[#1C4ED6] text-white shadow-[0_4px_12px_rgba(28,78,214,0.2)]' 
+                          : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300 shadow-sm'
                       )}
                     >
                       {key}
@@ -580,7 +585,7 @@ export default function ATSAnalyzerTool() {
 
             {/* Error */}
             {error && (
-              <div className="flex items-center gap-3 text-[#EF4444] bg-[rgba(239,68,68,0.1)] border border-[#EF4444]/20 p-4 rounded-[14px] text-sm font-semibold shadow-sm">
+              <div className="flex items-center gap-3 text-red-600 bg-red-50 border border-red-100 p-4 rounded-[14px] text-sm font-semibold shadow-sm">
                 <AlertCircle size={16} className="shrink-0" /> {error}
               </div>
             )}
@@ -592,15 +597,15 @@ export default function ATSAnalyzerTool() {
               onClick={handleAnalyze}
               disabled={!canAnalyze}
               className={cls(
-                'w-full py-4 rounded-[14px] text-[15px] font-bold tracking-wide flex items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden',
+                'w-full py-4 rounded-full text-[15px] font-bold tracking-wide flex items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden font-manrope',
                 canAnalyze
-                  ? 'bg-gradient-to-r from-[#3B82F6] to-[#6366F1] text-white hover:scale-[1.02] shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] hover:shadow-[0_6px_20px_rgba(99,102,241,0.23)] active:scale-100'
-                  : 'bg-[#111827] text-[#9CA3AF]/50 cursor-not-allowed border border-white/5'
+                  ? 'bg-[#1C4ED6] text-white hover:scale-[1.02] shadow-[0_8px_20px_rgba(28,78,214,0.3)] hover:shadow-[0_12px_28px_rgba(28,78,214,0.4)] active:scale-100'
+                  : 'bg-neutral-100 text-neutral-400 cursor-not-allowed border border-neutral-200'
               )}
             >
               {isAnalyzing
-                ? <><div className="w-5 h-5 border-[3px] border-white/20 border-t-white rounded-full animate-spin" /> Analyzing Document...</>
-                : <span className="flex items-center gap-2 drop-shadow-md">Analyze Resume <Sparkles size={16} className="ml-1" /></span>
+                ? <><div className="w-5 h-5 border-[3px] border-white/20 border-t-white rounded-full animate-spin" /> Analyzing...</>
+                : <span className="flex items-center gap-2">Analyze Resume <Sparkles size={16} className="ml-1" /></span>
               }
             </button>
           </div>
