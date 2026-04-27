@@ -38,7 +38,7 @@ export default function NavbarDemo() {
         },
         {
           title: "Resume Enhancer",
-          href: "/enhancer",
+          href: "/dashboard/enhance",
           icon: <PenTool strokeWidth={2} className="w-4 h-4" />,
           description: "Enhance your resume based on job roles",
         },
