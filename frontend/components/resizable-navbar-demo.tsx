@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
 import { Sparkles, PenTool, ScanText, BookText } from "lucide-react";
+import { SignInButton, SignUpButton, UserButton, Show } from "@clerk/nextjs";
+
+
 
 export default function NavbarDemo() {
   const navItems = [
@@ -74,8 +77,17 @@ export default function NavbarDemo() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex flex-1 items-center justify-end gap-2">
-            <NavbarButton variant="secondary" className="rounded-full">Login</NavbarButton>
-            <NavbarButton variant="primary" className="rounded-full">Get Started</NavbarButton>
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <NavbarButton variant="secondary" className="rounded-full px-6">Login</NavbarButton>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <NavbarButton variant="primary" className="rounded-full px-6">Get Started</NavbarButton>
+              </SignUpButton>
+            </Show>
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
           </div>
         </NavBody>
 
@@ -104,20 +116,31 @@ export default function NavbarDemo() {
               </a>
             ))}
             <div className="flex w-full flex-col gap-4">
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Login
-              </NavbarButton>
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full "
-              >
-                Get Started
-              </NavbarButton>
+              <Show when="signed-out">
+                <SignInButton mode="modal">
+                  <NavbarButton
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    variant="primary"
+                    className="w-full"
+                  >
+                    Login
+                  </NavbarButton>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <NavbarButton
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    variant="primary"
+                    className="w-full"
+                  >
+                    Get Started
+                  </NavbarButton>
+                </SignUpButton>
+              </Show>
+              <Show when="signed-in">
+                <div className="flex justify-center p-2 border border-neutral-200 rounded-xl">
+                   <UserButton showName />
+                </div>
+              </Show>
             </div>
           </MobileNavMenu>
         </MobileNav>
