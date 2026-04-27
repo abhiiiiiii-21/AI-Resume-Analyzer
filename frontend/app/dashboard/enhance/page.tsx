@@ -133,7 +133,14 @@ const Page = () => {
                   AI-Generated Content Preview
                 </p>
                 <div className="bg-muted/30 rounded-lg p-5 border border-border/40 max-h-[400px] overflow-y-auto text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap font-serif italic">
-                  {resultData.enhancedText}
+                  {(() => {
+                    try {
+                      const parsed = JSON.parse(resultData.enhancedText);
+                      return parsed.summary || resultData.enhancedText;
+                    } catch (e) {
+                      return resultData.enhancedText;
+                    }
+                  })()}
                 </div>
               </div>
             </div>

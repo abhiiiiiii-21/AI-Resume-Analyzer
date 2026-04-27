@@ -1,4 +1,4 @@
 export interface IPDFGenerator {
-  generate(text: string, fileName: string): Promise<string>;
+  generate(data: any, fileName: string): Promise<string>;
 }
  

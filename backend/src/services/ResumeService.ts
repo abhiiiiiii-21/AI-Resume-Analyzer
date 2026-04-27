@@ -40,23 +40,24 @@ export class ResumeService {
 
     const roleEnhancer = RoleEnhancerFactory.create(role, this.aiProvider);
 
-    const enhancedText = await roleEnhancer.enhance(originalText, jobDescription);
-
+    // AI now returns a structured object
+    const enhancedData = await roleEnhancer.enhance(originalText, jobDescription);
 
     const fileName = `resume-${uuidv4()}.pdf`;
-    await this.pdfGenerator.generate(enhancedText, fileName);
+    // PuppeteerGenerator accepts the data object
+    await this.pdfGenerator.generate(enhancedData, fileName);
     const pdfUrl = `/uploads/${fileName}`;
 
 
     const saved = await this.repository.save({
       userId,
       originalText,
-      enhancedText,
+      enhancedText: JSON.stringify(enhancedData), // Store as string for now
       jobDescription,
       pdfUrl,
     });
 
-    return { id: saved.id, pdfUrl, enhancedText };
+    return { id: saved.id, pdfUrl, enhancedText: JSON.stringify(enhancedData) };
   }
 
 

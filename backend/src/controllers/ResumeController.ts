@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { ResumeService } from "../services/ResumeService";
 import { PDFResumeParser } from "../parsers/PDFResumeParser";
 import { AIProvider as GroqAIProvider } from "../providers/GroqAIProvider";
-import { PDFGenerator } from "../generators/PDFGenerator";
+import { PuppeteerGenerator } from "../generators/PuppeteerGenerator";
 import { ResumeRepository } from "../repositories/ResumeRepository";
 
 /**
@@ -15,7 +15,7 @@ export class ResumeController {
     this.resumeService = new ResumeService(
       new PDFResumeParser(),
       new GroqAIProvider(),
-      new PDFGenerator(),
+      new PuppeteerGenerator(),
       new ResumeRepository()
     );
   }
