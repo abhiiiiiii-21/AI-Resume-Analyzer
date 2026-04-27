@@ -1,3 +1,4 @@
+import React from "react";
 import type { Metadata } from "next";
 import { Manrope, Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -37,7 +38,6 @@ export default function RootLayout({
             attribute="class"
             defaultTheme="light"
             enableSystem={false}
-            forcedTheme="light"
             disableTransitionOnChange
           >
             {children}

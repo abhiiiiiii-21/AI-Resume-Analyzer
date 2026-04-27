@@ -21,7 +21,7 @@ const client = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 export class AIProvider implements IAIProvider {
     async enhance(resumeText: string, jobDescription: string): Promise<string> {
         const response = await client.chat.completions.create({
-            model: "llama3-8b-8192",
+            model: "llama-3.1-8b-instant",
             messages: [
                 {
                     role: "system",

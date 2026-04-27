@@ -3,9 +3,8 @@
 import { useId, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function InputText() {
+export default function InputText({ value, onChange }: { value: string, onChange: (v: string) => void }) {
   const id = useId();
-  const [value, setValue] = useState("");
   const max = 3000;
 
   return (
@@ -13,7 +12,7 @@ export default function InputText() {
       <Textarea
         id={id}
         value={value}
-        onChange={(e) => setValue(e.target.value.slice(0, max))}
+        onChange={(e) => onChange(e.target.value.slice(0, max))}
         placeholder="Paste the job description or role requirements…"
         required
         className="min-h-[160px] resize-none text-sm leading-relaxed border-border/60"

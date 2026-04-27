@@ -14,7 +14,15 @@ export class ResumeRepository implements IResumeRepository {
   async save(data: SaveResumeData): Promise<{ id: string }> {
     const resume = await prisma.resume.create({
       data: {
-        userId: data.userId,
+        user: {
+          connectOrCreate: {
+            where: { id: data.userId },
+            create: { 
+              id: data.userId,
+              email: `${data.userId}@clerk.user` // Fallback email using ID
+            }
+          }
+        },
         originalText: data.originalText,
         enhancedText: data.enhancedText,
         jobDescription: data.jobDescription,

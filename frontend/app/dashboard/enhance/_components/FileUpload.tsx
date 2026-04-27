@@ -1,10 +1,10 @@
 "use client";
 
 import { AlertCircleIcon, XIcon } from "lucide-react";
-import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
+import { formatBytes, useFileUpload, type FileWithPreview } from "@/hooks/use-file-upload";
 import { Button } from "@/components/ui/button";
 
-export default function FileUpload() {
+export default function FileUpload({ onFileChange }: { onFileChange: (file: File | null) => void }) {
   const maxSize = 10 * 1024 * 1024;
 
   const [
@@ -18,9 +18,24 @@ export default function FileUpload() {
       removeFile,
       getInputProps,
     },
-  ] = useFileUpload({ maxSize });
+  ] = useFileUpload({ 
+    maxSize,
+    onFilesAdded: (uploadedFiles: FileWithPreview[]) => {
+      if (uploadedFiles.length > 0) {
+        const file = uploadedFiles[0].file;
+        if (file instanceof File) {
+          onFileChange(file);
+        }
+      }
+    }
+  });
 
   const file = files[0];
+
+  const handleRemove = (id: string) => {
+    removeFile(id);
+    onFileChange(null);
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -93,7 +108,7 @@ export default function FileUpload() {
             variant="ghost"
             size="icon"
             className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
-            onClick={() => removeFile(file.id)}
+            onClick={() => handleRemove(file.id)}
           >
             <XIcon className="size-3.5" />
           </Button>

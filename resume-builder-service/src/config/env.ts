@@ -16,7 +16,7 @@ const envSchema = z.object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
     GROQ_API_KEY: z.string().min(1, 'GROQ_API_KEY is required'),
-    GROQ_MODEL: z.string().default('llama-3.3-70b-versatile'),
+    GROQ_MODEL: z.string().default('llama-3.1-8b-instant'),
     CORS_ORIGINS: z.string().default('http://localhost:3000'),
     RATE_LIMIT_WINDOW_MS: z.string().default('60000'),
     RATE_LIMIT_MAX_REQUESTS: z.string().default('100'),
