@@ -1,10 +1,14 @@
 "use client";
 
+import { useEffect } from 'react';
 import { AlertCircleIcon, XIcon } from "lucide-react";
 import { formatBytes, useFileUpload, type FileWithPreview } from "@/hooks/use-file-upload";
 import { Button } from "@/components/ui/button";
 
-export default function FileUpload({ onFileChange }: { onFileChange: (file: File | null) => void }) {
+export default function FileUpload({ onFileChange, file: externalFile }: { 
+  onFileChange: (file: File | null) => void,
+  file?: File | null
+}) {
   const maxSize = 10 * 1024 * 1024;
 
   const [
@@ -17,6 +21,7 @@ export default function FileUpload({ onFileChange }: { onFileChange: (file: File
       openFileDialog,
       removeFile,
       getInputProps,
+      addFiles
     },
   ] = useFileUpload({ 
     maxSize,
@@ -29,6 +34,13 @@ export default function FileUpload({ onFileChange }: { onFileChange: (file: File
       }
     }
   });
+
+  // Sync external file to internal state if provided and internal state is empty
+  useEffect(() => {
+    if (externalFile && files.length === 0) {
+      addFiles([externalFile]);
+    }
+  }, [externalFile, files.length, addFiles]);
 
   const file = files[0];
 

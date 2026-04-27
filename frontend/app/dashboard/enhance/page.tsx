@@ -42,6 +42,51 @@ const Page = () => {
     fetchRoles();
   }, []);
 
+  // Hydrate from ATS session storage
+  useEffect(() => {
+    try {
+      const pending = sessionStorage.getItem('pendingResume');
+      if (pending) {
+        const name = sessionStorage.getItem('pendingResumeName') || 'resume.pdf';
+        const type = sessionStorage.getItem('pendingResumeType') || 'application/pdf';
+        const pRole = sessionStorage.getItem('pendingJobRole');
+        const pSkills = sessionStorage.getItem('pendingJobSkills');
+        
+        // Convert base64 back to File
+        const byteString = atob(pending.split(',')[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type });
+        const fileObj = new File([blob], name, { type });
+        
+        setFile(fileObj);
+        
+        // Try to match role if it exists in available roles
+        if (pRole) {
+          // Normalize for matching
+          const normalized = pRole.toLowerCase().replace(/\s+/g, '-');
+          setRole(normalized); 
+        }
+        
+        if (pSkills) {
+          setJobDescription(pSkills);
+        }
+
+        // Clean up
+        sessionStorage.removeItem('pendingResume');
+        sessionStorage.removeItem('pendingResumeName');
+        sessionStorage.removeItem('pendingResumeType');
+        sessionStorage.removeItem('pendingJobRole');
+        sessionStorage.removeItem('pendingJobSkills');
+      }
+    } catch (err) {
+      console.error("Hydration failed:", err);
+    }
+  }, [availableRoles]); // Re-run when roles are fetched to help with role selection
+
   const handleEnhance = async () => {
     if (!file || !jobDescription || !role) {
       alert("Please provide a resume, job description, and select a role.");
@@ -199,7 +244,7 @@ const Page = () => {
               <p className="text-[11px] font-medium uppercase tracking-widest mb-4" style={{ color: '#1C4ED6' }}>
                 Your resume
               </p>
-              <FileUpload onFileChange={setFile} />
+              <FileUpload onFileChange={setFile} file={file} />
             </div>
             <div className="p-6">
               <p className="text-[11px] font-medium uppercase tracking-widest mb-4" style={{ color: '#1C4ED6' }}>

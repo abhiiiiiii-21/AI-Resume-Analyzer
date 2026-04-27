@@ -8,10 +8,10 @@ const Footer = () => {
   return (
     <section className="relative font-inter -mt-20 z-10">
       <div className="w-full bg-white rounded-t-[3rem] flex flex-col shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
-        
+
         {/* Video Mask Header */}
         <div className="relative h-[250px] sm:h-[350px] md:h-[450px] lg:h-[500px] w-full">
-          <VideoText src="/Footer/blue.mp4" maskSrc="/Logo/Black.png"/>
+          <VideoText src="/Footer/blue.mp4" maskSrc="/Logo/Black.png" />
         </div>
 
 
@@ -33,7 +33,7 @@ const Footer = () => {
               <h3 className="text-gray-900 font-manrope font-semibold mb-6">Tools</h3>
               <div className="flex flex-col gap-4">
                 <Link001 href="/ai-enhancer">AI Enhancer</Link001>
-                <Link001 href="/ats-checker">ATS Checker</Link001>
+                <Link001 href="/ats">ATS Checker</Link001>
                 <Link001 href="/templates">Templates</Link001>
                 <Link001 href="/examples">Examples</Link001>
               </div>
@@ -60,8 +60,8 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-gray-200 text-xs font-inter text-gray-500">
             <p>© {new Date().getFullYear()} Resumind. All rights reserved.</p>
             <div className="flex items-center gap-6 mt-6 md:mt-0">
-               <Link002 href="/privacy">LinkedIn</Link002>
-               <Link002 href="/privacy">Instagram</Link002>
+              <Link002 href="/privacy">LinkedIn</Link002>
+              <Link002 href="/privacy">Instagram</Link002>
             </div>
           </div>
 

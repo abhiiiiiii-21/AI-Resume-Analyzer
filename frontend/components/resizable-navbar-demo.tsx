@@ -44,7 +44,7 @@ export default function NavbarDemo() {
         },
         {
           title: "ATS Score Checker",
-          href: "/ats-checker",
+          href: "/ats",
           icon: <ScanText strokeWidth={2} className="w-4 h-4" />,
           description: "Check ATS score and improve visibility",
         },
@@ -72,7 +72,7 @@ export default function NavbarDemo() {
     <div className="relative w-full font-manrope">
       <Navbar>
         {/* Desktop Navigation */}
-        
+
         <NavBody>
           <NavbarLogo />
           <NavItems items={navItems} />
@@ -138,7 +138,7 @@ export default function NavbarDemo() {
               </Show>
               <Show when="signed-in">
                 <div className="flex justify-center p-2 border border-neutral-200 rounded-xl">
-                   <UserButton showName />
+                  <UserButton showName />
                 </div>
               </Show>
             </div>

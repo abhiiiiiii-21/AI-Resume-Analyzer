@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import CircularScore from '../../components/ats/CircularScore';
 import SectionScores from '../../components/ats/SectionScores';
 import KeywordDensity from '../../components/ats/KeywordDensity';
@@ -220,7 +221,7 @@ function EmptyDashboard() {
 }
 
 /* ── Result dashboard ── */
-function ResultDashboard({ result, file, onReset }) {
+function ResultDashboard({ result, file, onReset, onOptimize }) {
   const { score, matchedSkills, missingSkills, suggestions, keywordDensity, sectionScores, aiSummary, atsCompatible } = result;
 
   return (
@@ -381,7 +382,9 @@ function ResultDashboard({ result, file, onReset }) {
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-neutral-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-full transition-all font-manrope">
               <Download size={15} /> Export Report
             </button>
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white bg-[#1C4ED6] hover:bg-blue-700 px-8 py-3 rounded-full transition-all shadow-[0_8px_20px_rgba(28,78,214,0.4)] font-manrope">
+            <button 
+              onClick={onOptimize}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white bg-[#1C4ED6] hover:bg-blue-700 px-8 py-3 rounded-full transition-all shadow-[0_8px_20px_rgba(28,78,214,0.4)] font-manrope">
               Optimize Resume <ArrowRight size={15} />
             </button>
           </div>
@@ -395,6 +398,7 @@ function ResultDashboard({ result, file, onReset }) {
 
 /* ── Main page ── */
 export default function ATSAnalyzerTool() {
+  const router = useRouter();
   const [step, setStep]               = useState(1);
   const [resumeFile, setResumeFile]   = useState(null);
   const [jobSkills, setJobSkills]     = useState([]);
@@ -417,6 +421,29 @@ export default function ATSAnalyzerTool() {
     setError(null);
     if (f && step < 2) setStep(2);
     if (!f && step >= 2) setStep(1);
+  };
+
+  const handleOptimize = () => {
+    if (!resumeFile) return;
+    
+    // Show a small loader if possible or just proceed
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const base64 = e.target.result;
+        sessionStorage.setItem('pendingResume', base64);
+        sessionStorage.setItem('pendingResumeName', resumeFile.name);
+        sessionStorage.setItem('pendingResumeType', resumeFile.type);
+        sessionStorage.setItem('pendingJobRole', jobRole);
+        sessionStorage.setItem('pendingJobSkills', jobSkills.join(', '));
+        router.push('/dashboard/enhance');
+      } catch (err) {
+        console.error("Storage failed:", err);
+        // Fallback: just redirect
+        router.push('/dashboard/enhance');
+      }
+    };
+    reader.readAsDataURL(resumeFile);
   };
 
   const handleAnalyze = async () => {
@@ -617,7 +644,20 @@ export default function ATSAnalyzerTool() {
       <main className="flex-1 relative z-10 overflow-y-auto h-screen bg-transparent">
         {isAnalyzing  && <ScanningView progress={progress} />}
         {!isAnalyzing && !result && <EmptyDashboard />}
-        {!isAnalyzing && result  && <ResultDashboard result={result} file={resumeFile} onReset={handleReset} />}
+        {!isAnalyzing && result && (
+          <div className="flex-1 overflow-y-auto">
+            {step === 4 && result ? (
+              <ResultDashboard 
+                result={result} 
+                file={resumeFile} 
+                onReset={handleReset} 
+                onOptimize={handleOptimize}
+              />
+            ) : step === 3 ? (
+              <></>
+            ) : null}
+          </div>
+        )}
       </main>
 
     </div>
