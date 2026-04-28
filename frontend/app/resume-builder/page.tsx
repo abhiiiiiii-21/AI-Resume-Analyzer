@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ResumeForm from "@/components/ResumeForm";
 import ResumePreview from "@/components/ResumePreview";
@@ -33,7 +33,7 @@ const initialData: Resume = {
   certifications: [],
 };
 
-export default function ResumeBuilderPage() {
+function ResumeBuilderContent() {
   const { isLoaded, isSignedIn } = useUser();
   const { getToken } = useAuth();
   const searchParams = useSearchParams();
@@ -249,5 +249,20 @@ export default function ResumeBuilderPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ResumeBuilderPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-black">
+        <div className="flex items-center gap-3 text-neutral-500">
+          <Loader2 className="w-6 h-6 animate-spin text-[#1C4ED6]" />
+          <span className="text-lg font-medium font-manrope">Initializing Builder...</span>
+        </div>
+      </div>
+    }>
+      <ResumeBuilderContent />
+    </Suspense>
   );
 }
