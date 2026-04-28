@@ -13,6 +13,8 @@ import errorHandler from './middlewares/errorHandler';
 // Resume Enhancer section
 import userRoutes from './routes/UserRoutes';
 import resumeRoutes from './routes/ResumeRoutes';
+import dashboardRouter from './routes/DashboardRouter';
+import resumeBuilderRouter from './routes/ResumeBuilderRouter';
 
 dotenv.config();
 
@@ -40,6 +42,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/ats', atsRouter.router);
 app.use('/api/user', userRoutes);
 app.use('/api/resume', resumeRoutes);
+app.use('/api/dashboard', dashboardRouter);
+app.use('/api/resume-builder', resumeBuilderRouter);
 
 app.get('/', (_req, res) => {
   res.json({ message: 'API is running.' });

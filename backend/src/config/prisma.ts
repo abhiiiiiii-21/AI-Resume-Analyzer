@@ -16,7 +16,10 @@ class Database {
         throw new Error("DATABASE_URL is not defined in environment variables.");
       }
 
-      const pool = new Pool({ connectionString });
+      const pool = new Pool({ 
+        connectionString,
+        ssl: true 
+      });
       const adapter = new PrismaPg(pool);
       
       Database.instance = new PrismaClient({ adapter });

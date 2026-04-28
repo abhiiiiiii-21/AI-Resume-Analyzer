@@ -1,10 +1,8 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema for the Next.js frontend API routes
+// This mirrors the backend schema but outputs to the standard location
 
 generator client {
-  provider   = "prisma-client-js"
-  output     = "../src/generated/prisma"
-  engineType = "library"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -43,7 +41,7 @@ model ResumeBuilderDraft {
   id        String   @id @default(uuid())
   userId    String
   title     String   @default("Untitled Resume")
-  data      Json     // Full Resume object snapshot
+  data      Json
   theme     String   @default("default")
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())

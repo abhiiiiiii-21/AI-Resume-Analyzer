@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import CircularScore from '../../components/ats/CircularScore';
 import SectionScores from '../../components/ats/SectionScores';
 import KeywordDensity from '../../components/ats/KeywordDensity';
@@ -399,6 +400,7 @@ function ResultDashboard({ result, file, onReset, onOptimize }) {
 /* ── Main page ── */
 export default function ATSAnalyzerTool() {
   const router = useRouter();
+  const { getToken } = useAuth();
   const [step, setStep]               = useState(1);
   const [resumeFile, setResumeFile]   = useState(null);
   const [jobSkills, setJobSkills]     = useState([]);
@@ -472,6 +474,27 @@ export default function ATSAnalyzerTool() {
       const data = await res.json();
       clearInterval(timer);
       setProgress(100);
+
+      // ── Persist the ATS score to the dashboard ──────────────────────────
+      try {
+        const token = await getToken();
+        await fetch(`${baseUrl}/dashboard/ats-record`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            score: data.score,
+            jobRole: jobRole || null,
+            fileName: resumeFile?.name || null,
+          }),
+        });
+      } catch (err) {
+        // Non-critical — score still shows, just won't be in history
+        console.warn('Could not save ATS record to dashboard', err);
+      }
+
       setTimeout(() => { setIsAnalyzing(false); setResult(data); setStep(4); }, 700);
     } catch (e) {
       clearInterval(timer);
@@ -480,6 +503,7 @@ export default function ATSAnalyzerTool() {
       setStep(jobSkills.length > 0 ? 2 : 1);
     }
   };
+
 
   const handleReset = () => {
     setResult(null); setResumeFile(null); setJobSkills([]);
