@@ -2,11 +2,11 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/app.js",
   "scripts": {
     "dev": "ts-node-dev src/app.ts",
-    "build": "npx prisma generate && tsc",
-    "start": "node dist/src/app.js",
+    "build": "tsc",
+    "start": "node dist/app.js",
     "postinstall": "npx prisma generate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
