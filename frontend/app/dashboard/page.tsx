@@ -424,6 +424,14 @@ export default function DashboardPage() {
                 color: "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 border border-neutral-100",
                 iconColor: "text-neutral-600",
               },
+              {
+                href: "/ai-builder",
+                icon: FileText,
+                label: "AI Resume Builder",
+                sub: "Chat to build resume",
+                color: "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 border border-neutral-100",
+                iconColor: "text-neutral-600",
+              },
             ].map((action) => {
               const Icon = action.icon;
               return (
@@ -570,6 +578,41 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* ── AI BUILDER SESSIONS ── */}
+      <div className="mt-6 bg-white rounded-2xl border border-neutral-100 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-base font-bold text-neutral-900 font-manrope">AI Builder Sessions</h2>
+            <p className="text-xs text-neutral-400 mt-0.5 font-medium">Your AI-powered resume building conversations</p>
+          </div>
+          <Link
+            href="/ai-builder"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#1C4ED6] hover:underline font-manrope"
+          >
+            <Plus size={12} /> New Session
+          </Link>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          {/* We'll show a placeholder that links to the AI Builder */}
+          <Link
+            href="/ai-builder"
+            className="flex items-center gap-4 px-4 py-4 rounded-xl bg-gradient-to-r from-[#EEF2FF] to-[#F0F4FF] hover:from-[#E0E7FF] hover:to-[#EEF2FF] border border-blue-100 transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#1C4ED6] flex items-center justify-center shrink-0 shadow-[0_4px_14px_rgba(28,78,214,0.3)]">
+              <Sparkles size={18} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-neutral-900 font-manrope">Open AI Resume Builder</p>
+              <p className="text-[11px] text-neutral-500 mt-0.5 font-medium">
+                Chat with AI to build, manage, and download your resumes
+              </p>
+            </div>
+            <ArrowRight size={15} className="text-[#1C4ED6] opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+          </Link>
+        </div>
       </div>
 
       {/* ── RECENT ATS HISTORY TABLE ── */}

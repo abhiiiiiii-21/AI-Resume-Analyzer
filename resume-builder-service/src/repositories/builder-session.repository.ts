@@ -67,4 +67,11 @@ export class BuilderSessionRepository {
 
         return result[0];
     }
+
+    /**
+     * Delete a session by ID.
+     */
+    async delete(id: string): Promise<void> {
+        await db.delete(builderSessions).where(eq(builderSessions.id, id));
+    }
 }

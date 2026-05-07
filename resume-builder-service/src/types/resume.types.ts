@@ -43,6 +43,8 @@ export interface ResumeExperience {
     startDate?: string;
     endDate?: string;
     isCurrent?: boolean;
+    /** Short overview of the role */
+    description?: string;
     /** Action-oriented bullet points with measurable achievements */
     achievements: string[];
     /** Technologies used in this role */

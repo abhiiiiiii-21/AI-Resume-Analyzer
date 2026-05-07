@@ -90,4 +90,20 @@ export class BuilderSessionService {
     async completeSession(sessionId: string): Promise<BuilderSession> {
         return this.sessionRepo.update(sessionId, { status: 'COMPLETED' });
     }
+
+    /**
+     * Rename a session.
+     */
+    async renameSession(sessionId: string, userId: string, title: string): Promise<BuilderSession> {
+        const session = await this.getSession(sessionId, userId);
+        return this.sessionRepo.update(session.id, { title });
+    }
+
+    /**
+     * Delete a session (with ownership check).
+     */
+    async deleteSession(sessionId: string, userId: string): Promise<void> {
+        const session = await this.getSession(sessionId, userId);
+        await this.sessionRepo.delete(session.id);
+    }
 }

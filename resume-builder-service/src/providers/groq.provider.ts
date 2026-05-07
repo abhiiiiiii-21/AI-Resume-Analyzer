@@ -1,21 +1,28 @@
 import { groqClient, GROQ_MODEL } from '../config/groq';
+import { AppError } from '../utils/app-error';
+
+/**
+ * Available free Groq models for resume building.
+ * Each has separate rate limits on Groq's free tier.
+ */
+export const AVAILABLE_MODELS = [
+    { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B', description: 'Best quality (recommended)', isDefault: true },
+    { id: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1 70B', description: 'Advanced reasoning' },
+    { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B', description: 'Fast, high availability' },
+    { id: 'deepseek-r1-distill-qwen-32b', label: 'DeepSeek R1 32B', description: 'Advanced reasoning, lightweight' },
+    { id: 'llama-3.2-11b-vision-preview', label: 'Llama 3.2 11B', description: 'Fast multimodal model' },
+    { id: 'llama-3.2-3b-preview', label: 'Llama 3.2 3B', description: 'Ultra-fast lightweight model' },
+    { id: 'llama-3.2-1b-preview', label: 'Llama 3.2 1B', description: 'Ultra-fast, lowest latency' },
+    { id: 'gemma2-9b-it', label: 'Gemma 2 9B', description: 'Google model, good for structured data' },
+    { id: 'gemma-7b-it', label: 'Gemma 7B', description: 'Google model, lightweight' },
+    { id: 'mixtral-8x7b-32768', label: 'Mixtral 8x7B', description: 'Mistral model, large context' },
+];
 
 /**
  * GroqProvider
  * 
  * The ONLY class that directly calls the Groq SDK.
- * All other code goes through this provider.
- * 
- * Why Groq over Gemini?
- * - 10x faster inference (Groq runs on custom LPU hardware)
- * - llama-3.3-70b-versatile: excellent JSON output and instruction following
- * - Generous free tier
- * - OpenAI-compatible Chat API — familiar structure
- * 
- * Why isolate it?
- * - Single point for error handling
- * - Easy to mock in tests
- * - Swappable with other providers (OpenAI, Claude, etc.)
+ * Supports model override and automatic fallback on rate limits.
  */
 export class GroqProvider {
     /**
@@ -23,47 +30,69 @@ export class GroqProvider {
      * 
      * @param systemPrompt - Instructions for how the model should behave
      * @param userMessage - The user input + context
-     * @returns The raw text response from the model
+     * @param modelOverride - Optional model to use instead of default
+     * @returns Object with response text and which model was used
      */
-    async generateContent(systemPrompt: string, userMessage: string): Promise<string> {
-        try {
-            const completion = await groqClient.chat.completions.create({
-                model: GROQ_MODEL,
-                messages: [
-                    {
-                        role: 'system',
-                        content: systemPrompt,
-                    },
-                    {
-                        role: 'user',
-                        content: userMessage,
-                    },
-                ],
-                // These settings encourage clean JSON output
-                temperature: 0.3,    // Lower = more deterministic, better for structured data
-                max_tokens: 8192,    // Generous limit for full resume JSON
-                top_p: 0.9,
-            });
+    async generateContent(
+        systemPrompt: string,
+        userMessage: string,
+        modelOverride?: string
+    ): Promise<{ text: string, usedModel: string }> {
+        const initialModel = modelOverride || GROQ_MODEL;
+        let currentModel = initialModel;
+        let attempts = 0;
+        const maxAttempts = AVAILABLE_MODELS.length;
 
-            const text = completion.choices[0]?.message?.content;
+        while (attempts < maxAttempts) {
+            try {
+                const text = await this.callModel(currentModel, systemPrompt, userMessage);
+                return { text, usedModel: currentModel };
+            } catch (error: any) {
+                // If rate limited or model decommissioned, try next model
+                const isRateLimited = error.status === 429 || error.message?.includes('rate_limit') || error.message?.includes('Rate limit');
+                const isDecommissioned = error.status === 400 && error.message?.includes('decommissioned');
+                
+                if (isRateLimited || isDecommissioned) {
+                    attempts++;
+                    const currentIndex = AVAILABLE_MODELS.findIndex(m => m.id === currentModel);
+                    
+                    if (currentIndex !== -1 && currentIndex + 1 < AVAILABLE_MODELS.length && attempts < maxAttempts) {
+                        currentModel = AVAILABLE_MODELS[currentIndex + 1].id;
+                        console.warn(`[GroqProvider] Rate limit hit. Falling back to ${currentModel}`);
+                        continue;
+                    }
 
-            if (!text || text.trim() === '') {
-                throw new Error('Groq returned an empty response');
+                    const retryMatch = error.message?.match(/try again in (\d+m[\d.]+s|\d+s)/);
+                    const retryIn = retryMatch ? retryMatch[1] : 'a few minutes';
+                    throw new AppError(`Rate limit reached across models. Try again in ${retryIn}.`, 429);
+                }
+
+                if (error.message?.includes('API key') || error.status === 401) {
+                    throw new AppError('Groq API key is invalid or missing. Check your GROQ_API_KEY in .env.', 401);
+                }
+
+                throw new AppError(`AI error: ${error.message || 'Unknown error'}`, 500);
             }
-
-            return text;
-        } catch (error: any) {
-            console.error('[GroqProvider] Error calling Groq API:', error.message);
-
-            if (error.message?.includes('API key') || error.status === 401) {
-                throw new Error('Groq API key is invalid or missing. Check your GROQ_API_KEY in .env.');
-            }
-
-            if (error.status === 429 || error.message?.includes('rate')) {
-                throw new Error('Groq API rate limit exceeded. Please try again in a moment.');
-            }
-
-            throw new Error(`Groq API error: ${error.message || 'Unknown error'}`);
         }
+        throw new AppError('Failed to generate content after multiple attempts.', 500);
+    }
+
+    private async callModel(model: string, systemPrompt: string, userMessage: string): Promise<string> {
+        const completion = await groqClient.chat.completions.create({
+            model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userMessage },
+            ],
+            temperature: 0.3,
+            max_tokens: 8192,
+            top_p: 0.9,
+        });
+
+        const text = completion.choices[0]?.message?.content;
+        if (!text || text.trim() === '') {
+            throw new Error('Groq returned an empty response');
+        }
+        return text;
     }
 }

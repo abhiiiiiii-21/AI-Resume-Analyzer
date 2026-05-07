@@ -4,6 +4,7 @@ import { BuilderSessionService } from '../services/builder-session.service';
 import { ChatService } from '../services/chat.service';
 import { ResumeDraftService } from '../services/resume-draft.service';
 import { ResumeAIService } from '../services/resume-ai.service';
+import { AVAILABLE_MODELS } from '../providers/groq.provider';
 import { ApiResponse } from '../utils/api-response';
 import { asyncHandler } from '../utils/async-handler';
 import { ResumeData } from '../types/resume.types';
@@ -60,6 +61,26 @@ export class BuilderController {
             draftId: draft.id,
             status: session.status,
             message: 'Resume builder session started. Send your first message to begin!',
+        });
+    });
+
+    /**
+     * GET /api/v1/builder/session/list
+     * 
+     * Lists all sessions for the current user.
+     */
+    listSessions = asyncHandler(async (req: Request, res: Response) => {
+        const user = await this.userContextService.resolveUser(req.externalUserId!);
+        const sessions = await this.sessionService.getUserSessions(user.id);
+
+        ApiResponse.success(res, {
+            sessions: sessions.map((s) => ({
+                id: s.id,
+                title: s.title,
+                status: s.status,
+                createdAt: s.createdAt,
+                updatedAt: s.updatedAt,
+            })),
         });
     });
 
@@ -146,7 +167,8 @@ export class BuilderController {
             req.body.message,
             draft.resumeJson as ResumeData,
             chatHistory,
-            draft.missingFields as string[]
+            draft.missingFields as string[],
+            req.body.model  // optional model override from frontend
         );
 
         // 7. Save the updated draft to the database
@@ -176,6 +198,45 @@ export class BuilderController {
             completionScore: aiResult.completionScore,
             needsMoreInfo: aiResult.needsMoreInfo,
             nextQuestion: aiResult.nextQuestion,
+            usedModel: aiResult.usedModel,
         });
+    });
+
+    /**
+     * PATCH /api/v1/builder/session/:sessionId/rename
+     */
+    renameSession = asyncHandler(async (req: Request, res: Response) => {
+        const user = await this.userContextService.resolveUser(req.externalUserId!);
+        const session = await this.sessionService.renameSession(
+            req.params.sessionId as string,
+            user.id,
+            req.body.title
+        );
+
+        ApiResponse.success(res, {
+            id: session.id,
+            title: session.title,
+            message: 'Session renamed successfully.',
+        });
+    });
+
+    /**
+     * DELETE /api/v1/builder/session/:sessionId
+     */
+    deleteSession = asyncHandler(async (req: Request, res: Response) => {
+        const user = await this.userContextService.resolveUser(req.externalUserId!);
+        await this.sessionService.deleteSession(req.params.sessionId as string, user.id);
+
+        ApiResponse.success(res, {
+            message: 'Session deleted successfully.',
+        });
+    });
+
+    /**
+     * GET /api/v1/builder/models
+     * Returns the list of available AI models.
+     */
+    listModels = asyncHandler(async (_req: Request, res: Response) => {
+        ApiResponse.success(res, { models: AVAILABLE_MODELS });
     });
 }

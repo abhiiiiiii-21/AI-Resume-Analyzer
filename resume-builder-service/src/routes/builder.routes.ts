@@ -23,17 +23,23 @@ const router = Router();
 const builderController = new BuilderController();
 const resumeController = new ResumeController();
 
+// --- Model listing (no auth needed for model list) ---
+router.get('/models', builderController.listModels);
+
 // All builder routes require user context (x-user-id header)
 router.use(userContextMiddleware);
 
 // --- Session routes ---
 router.post('/session/start', validate(startSessionSchema), builderController.startSession);
+router.get('/session/list', builderController.listSessions);
 router.get('/session/:sessionId', builderController.getSession);
 router.post(
     '/session/:sessionId/message',
     validate(sendMessageSchema),
     builderController.sendMessage
 );
+router.patch('/session/:sessionId/rename', builderController.renameSession);
+router.delete('/session/:sessionId', builderController.deleteSession);
 
 // --- Draft routes (section update + finalize) ---
 router.patch(

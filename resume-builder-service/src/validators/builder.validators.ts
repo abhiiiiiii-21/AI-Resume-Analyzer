@@ -26,7 +26,8 @@ export const sendMessageSchema = z.object({
     message: z
         .string()
         .min(1, 'Message cannot be empty')
-        .max(5000, 'Message must be 5000 characters or less'),
+        .max(20000, 'Message must be 20000 characters or less'),
+    model: z.string().optional(),
 });
 
 /** Inferred TypeScript types from schemas — use these in controllers */

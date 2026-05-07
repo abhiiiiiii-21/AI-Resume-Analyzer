@@ -17,6 +17,7 @@ export interface AIResumeResponse {
     completionScore: number;
     needsMoreInfo: boolean;
     nextQuestion: string;
+    usedModel?: string;
 }
 
 /**
@@ -57,7 +58,8 @@ export class ResumeAIService {
         userMessage: string,
         currentResume: ResumeData,
         chatHistory: ChatMessage[],
-        currentMissingFields: string[]
+        currentMissingFields: string[],
+        modelOverride?: string
     ): Promise<AIResumeResponse> {
         // 1. Build prompts
         const systemPrompt = this.promptFactory.buildSystemPrompt();
@@ -68,8 +70,8 @@ export class ResumeAIService {
             currentMissingFields
         );
 
-        // 2. Call Groq
-        const rawResponse = await this.groqProvider.generateContent(systemPrompt, userPrompt);
+        // 2. Call Groq (with optional model override)
+        const { text: rawResponse, usedModel } = await this.groqProvider.generateContent(systemPrompt, userPrompt, modelOverride);
 
         // 3. Parse the JSON response
         const parsed = extractJsonFromText(rawResponse);
@@ -77,7 +79,7 @@ export class ResumeAIService {
         if (!parsed) {
             // Groq returned something we can't parse — return a graceful fallback
             console.error('[ResumeAIService] Failed to parse Groq response');
-            return this.buildFallbackResponse(currentResume, currentMissingFields, rawResponse);
+            return this.buildFallbackResponse(currentResume, currentMissingFields, rawResponse, usedModel);
         }
 
         // 4. Validate the parsed response has the expected fields
@@ -90,6 +92,7 @@ export class ResumeAIService {
         return {
             ...aiResponse,
             resumeData: mergedResume,
+            usedModel,
         };
     }
 
@@ -124,7 +127,8 @@ export class ResumeAIService {
     private buildFallbackResponse(
         currentResume: ResumeData,
         currentMissingFields: string[],
-        rawResponse: string
+        rawResponse: string,
+        usedModel?: string
     ): AIResumeResponse {
         return {
             assistantMessage:
@@ -136,6 +140,7 @@ export class ResumeAIService {
             completionScore: 0,
             needsMoreInfo: true,
             nextQuestion: 'Could you try rephrasing your last message?',
+            usedModel,
         };
     }
 }
