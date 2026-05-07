@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ChatInterface } from '@/components/ai-builder/chat-interface';
@@ -58,7 +58,7 @@ function getRequirements(data: any): Req[] {
 /* ── Session type ── */
 interface Session { id: string; title: string; status: string; createdAt: string; updatedAt: string }
 
-export default function AIBuilderPage() {
+function AIBuilderPageInner() {
   const { isLoaded, userId } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -694,5 +694,20 @@ export default function AIBuilderPage() {
         <ResumePreview data={resumeData} />
       </main>
     </div>
+  );
+}
+
+export default function AIBuilderPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
+        <div className="flex items-center gap-3 text-neutral-500 font-bold">
+          <div className="w-5 h-5 border-[3px] border-neutral-200 border-t-[#1C4ED6] rounded-full animate-spin" />
+          Loading...
+        </div>
+      </div>
+    }>
+      <AIBuilderPageInner />
+    </Suspense>
   );
 }
