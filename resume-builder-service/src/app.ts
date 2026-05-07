@@ -31,15 +31,29 @@ const app: Application = express();
 // Helmet sets various HTTP headers to protect against common attacks
 app.use(helmet());
 
-// CORS — allow requests from configured frontend origins
+// CORS — allow requests from configured frontend origins + all Vercel preview deployments
+const allowedOrigins = env.corsOrigins;
 app.use(
     cors({
-        origin: env.corsOrigins,
+        origin: (origin, callback) => {
+            // Allow requests with no origin (curl, mobile apps, server-to-server)
+            if (!origin) return callback(null, true);
+            // Allow explicitly configured origins
+            if (allowedOrigins.includes(origin)) return callback(null, true);
+            // Allow any Vercel preview/deployment URL for this project
+            if (/^https:\/\/ai-resume-analyzer[a-z0-9\-]*\.vercel\.app$/.test(origin)) return callback(null, true);
+            // Block everything else
+            callback(new Error(`CORS policy: origin ${origin} not allowed`));
+        },
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id'],
         credentials: true,
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
     })
 );
+// Explicitly handle OPTIONS preflight for all routes
+app.options('*', cors());
 
 // Rate limiting — prevent abuse and brute-force attacks
 app.use(
