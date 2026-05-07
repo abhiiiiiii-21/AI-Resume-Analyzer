@@ -89,6 +89,10 @@ export default function AIBuilderPage() {
   // Model state
   const [models, setModels] = useState<Array<{ id: string; label: string; description?: string; isDefault?: boolean }>>([]);
   const [selectedModel, setSelectedModel] = useState<string>('');
+  // exhaustedModels: { [modelId]: expiresAt (timestamp) }
+  const [exhaustedModels, setExhaustedModels] = useState<Record<string, number>>({});
+  const [showModelMenu, setShowModelMenu] = useState(false);
+  const [now, setNow] = useState(Date.now());
 
   const requirements = useMemo(() => getRequirements(resumeData), [resumeData]);
   const requiredItems = requirements.filter(r => r.required);
@@ -101,20 +105,64 @@ export default function AIBuilderPage() {
     if (isLoaded && !userId) router.push('/');
   }, [isLoaded, userId, router]);
 
+  // Load exhausted models from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('builder_exhausted_models');
+      if (stored) setExhaustedModels(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  // Persist exhausted models to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('builder_exhausted_models', JSON.stringify(exhaustedModels));
+    } catch {}
+  }, [exhaustedModels]);
+
+  // Tick every 30s to update countdowns & auto-revive expired models
+  useEffect(() => {
+    const t = setInterval(() => {
+      const n = Date.now();
+      setNow(n);
+      setExhaustedModels(prev => {
+        const updated = { ...prev };
+        let changed = false;
+        for (const id in updated) {
+          if (updated[id] <= n) { delete updated[id]; changed = true; }
+        }
+        return changed ? updated : prev;
+      });
+    }, 30_000);
+    return () => clearInterval(t);
+  }, []);
+
   useEffect(() => {
     async function loadModels() {
       try {
         const res = await listModels();
-        setModels(res.data?.models || []);
-        const def = res.data?.models?.find((m: any) => m.isDefault);
-        if (def) setSelectedModel(def.id);
-        else if (res.data?.models?.length > 0) setSelectedModel(res.data.models[0].id);
+        const loaded = res.data?.models || [];
+        setModels(loaded);
+        // Restore persisted model or pick default
+        const savedModel = localStorage.getItem('builder_selected_model');
+        const available = loaded.filter((m: any) => !exhaustedModels[m.id] || exhaustedModels[m.id] <= Date.now());
+        if (savedModel && loaded.find((m: any) => m.id === savedModel)) {
+          setSelectedModel(savedModel);
+        } else {
+          const def = available.find((m: any) => m.isDefault) || available[0];
+          if (def) setSelectedModel(def.id);
+        }
       } catch (err) {
-        console.error('Failed to load models:', err);
+        console.warn('Failed to load models:', err);
       }
     }
     loadModels();
   }, []);
+
+  // Persist selected model to localStorage
+  useEffect(() => {
+    if (selectedModel) localStorage.setItem('builder_selected_model', selectedModel);
+  }, [selectedModel]);
 
   // Sync session ID from URL on mount
   useEffect(() => {
@@ -259,13 +307,17 @@ export default function AIBuilderPage() {
         loadPastSessions(); // update sidebar
       }
 
+      if (!activeSessionId) throw new Error('Failed to initialize session');
       const res = await sendBuilderMessage(activeSessionId, message, userId, selectedModel);
       
       // Auto-update the selected model if the backend had to fall back to another one
       if (res.data.usedModel && res.data.usedModel !== selectedModel) {
+        // Mark the originally requested model as exhausted for 1 hour
+        const expiresAt = Date.now() + 60 * 60 * 1000;
+        setExhaustedModels(prev => ({ ...prev, [selectedModel]: expiresAt }));
         setSelectedModel(res.data.usedModel);
         const fallbackModelName = models.find(m => m.id === res.data.usedModel)?.label || res.data.usedModel;
-        toast.info(`Switched to ${fallbackModelName} due to rate limits on previous model.`, { duration: 5000 });
+        toast.info(`⚡ Switched to ${fallbackModelName} — previous model quota hit.`, { duration: 5000 });
       }
 
       if (res.data.assistantMessage) {
@@ -276,8 +328,16 @@ export default function AIBuilderPage() {
       }
     } catch (error: any) {
       console.warn('AI Builder Warning:', error.message);
-      if (error.message && (error.message.includes('Rate limit') || error.message.includes('quota'))) {
-        toast.error('All free AI models are currently busy or out of quota. Please try again in a few minutes.', { duration: 7000 });
+      const isRateLimit = error.message && (error.message.includes('Rate limit') || error.message.includes('quota'));
+      if (isRateLimit) {
+        // Mark ALL models as exhausted for 10 minutes
+        const expiresAt = Date.now() + 10 * 60 * 1000;
+        setExhaustedModels(prev => {
+          const updated = { ...prev };
+          models.forEach(m => { updated[m.id] = expiresAt; });
+          return updated;
+        });
+        toast.error('⏳ All AI models are currently busy. They will auto-revive in ~10 minutes.', { duration: 8000 });
       } else {
         toast.error('Failed to send message to AI.');
       }
@@ -363,19 +423,77 @@ export default function AIBuilderPage() {
               </div>
               <span className="font-bold text-neutral-900 text-base tracking-tight font-manrope hidden sm:inline-block">Resumind</span>
             </div>
-            <div className="flex items-center gap-3">
-              {models.length > 0 && (
-                <select 
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  className="text-[10px] font-bold text-neutral-500 hover:text-neutral-900 bg-white border border-neutral-200 rounded-md px-1.5 py-1 focus:outline-none focus:border-[#1C4ED6] transition-colors font-manrope cursor-pointer max-w-[100px] sm:max-w-none truncate"
-                  title="Select AI Model"
-                >
-                  {models.map(m => (
-                    <option key={m.id} value={m.id}>{m.label}</option>
-                  ))}
-                </select>
-              )}
+            <div className="flex items-center gap-3 relative">
+              {models.length > 0 && (() => {
+                const activeModel = models.find(m => m.id === selectedModel);
+                const isExhausted = selectedModel && exhaustedModels[selectedModel] && exhaustedModels[selectedModel] > now;
+                const exhaustedCount = models.filter(m => exhaustedModels[m.id] && exhaustedModels[m.id] > now).length;
+                return (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowModelMenu(v => !v)}
+                      className={`flex items-center gap-1.5 text-[10px] font-bold border rounded-md px-2 py-1 transition-colors font-manrope cursor-pointer ${
+                        isExhausted
+                          ? 'text-red-500 border-red-200 bg-red-50'
+                          : 'text-neutral-600 border-neutral-200 bg-white hover:border-[#1C4ED6]'
+                      }`}
+                      title="Select AI Model"
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${isExhausted ? 'bg-red-400' : 'bg-emerald-400'}`} />
+                      <span className="max-w-[80px] truncate">{activeModel?.label || 'Model'}</span>
+                      {exhaustedCount > 0 && <span className="text-[8px] bg-red-100 text-red-500 px-1 rounded">{exhaustedCount} busy</span>}
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/></svg>
+                    </button>
+
+                    {showModelMenu && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setShowModelMenu(false)} />
+                        <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-neutral-200 rounded-xl shadow-xl z-40 overflow-hidden">
+                          <div className="px-3 py-2 border-b border-neutral-100">
+                            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest font-manrope">AI Model</p>
+                          </div>
+                          <div className="max-h-72 overflow-y-auto p-1">
+                            {models.map(m => {
+                              const isActive = m.id === selectedModel;
+                              const expiry = exhaustedModels[m.id];
+                              const isBusy = !!(expiry && expiry > now);
+                              const minsLeft = isBusy ? Math.ceil((expiry - now) / 60000) : 0;
+                              return (
+                                <button
+                                  key={m.id}
+                                  disabled={isBusy}
+                                  onClick={() => { if (!isBusy) { setSelectedModel(m.id); setShowModelMenu(false); } }}
+                                  className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all ${
+                                    isActive && !isBusy
+                                      ? 'bg-[#1C4ED6]/8 border border-[#1C4ED6]/20'
+                                      : isBusy
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : 'hover:bg-neutral-50 cursor-pointer'
+                                  }`}
+                                >
+                                  <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                    isActive && !isBusy ? 'bg-emerald-400' : isBusy ? 'bg-red-400' : 'bg-neutral-300'
+                                  }`} />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[11px] font-bold text-neutral-800 font-manrope truncate">{m.label}</span>
+                                      {isActive && !isBusy && <span className="text-[8px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>}
+                                      {isBusy && <span className="text-[8px] bg-red-100 text-red-500 px-1.5 py-0.5 rounded-full font-bold">BUSY</span>}
+                                    </div>
+                                    <p className="text-[9px] text-neutral-400 font-manrope truncate">
+                                      {isBusy ? `Revives in ~${minsLeft} min` : (m.description || '')}
+                                    </p>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
               <button onClick={() => { setShowSessions(!showSessions); if (!showSessions) loadPastSessions(); }}
                 className="flex items-center gap-1.5 text-xs font-bold text-neutral-500 hover:text-[#1C4ED6] transition-colors font-manrope">
                 <Clock size={14} /> Sessions
